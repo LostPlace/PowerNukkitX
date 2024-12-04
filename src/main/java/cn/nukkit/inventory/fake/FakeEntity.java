@@ -12,13 +12,13 @@ import java.util.List;
 
 
 public class FakeEntity implements FakeBlock {
-    protected final String eN;
+    protected final String entityId;
     protected final String tileId;
     protected HashSet<Vector3> lastPositions = new HashSet<>();
     protected final long eId;
 
     public FakeEntity(String eId) {
-        this.eN = eId;
+        this.entityId = eId;
         this.tileId = "default";
         this.eId = Entity.entityCount.getAndIncrement();
     }
@@ -37,7 +37,7 @@ public class FakeEntity implements FakeBlock {
         lastPositions.addAll(this.getPlacePositions(player));
         lastPositions.forEach(position -> {
             AddEntityPacket addEntity = new AddEntityPacket();
-            addEntity.type = Registries.ENTITY.getEntityNetworkId(this.eN);
+            addEntity.type = Registries.ENTITY.getEntityNetworkId(this.entityId);
             addEntity.entityUniqueId = this.getId();
             addEntity.entityRuntimeId = this.getId();
             addEntity.yaw = 0f;

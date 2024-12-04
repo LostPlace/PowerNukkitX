@@ -135,8 +135,8 @@ public abstract class Command {
             customData.aliases = new CommandEnum(this.name + "Aliases", aliases);
         }
 
-        String tra = CustomTranslationManager.translate(player, this.description);
-        if(Objects.equals(tra, this.description)) {
+        String customTranslation = CustomTranslationManager.translate(player, this.description);
+        if(Objects.equals(customTranslation, this.description)) {
             if (plugin == InternalPlugin.INSTANCE) {
                 customData.description = player.getServer().getLanguage().tr(this.getDescription(), CommandOutputContainer.EMPTY_STRING, "commands.", false);
             } else if (plugin instanceof PluginBase pluginBase) {
@@ -148,7 +148,7 @@ public abstract class Command {
                 }
             }
         } else {
-            customData.description = tra;
+            customData.description = customTranslation;
         }
 
         this.commandParameters.forEach((key, params) -> {

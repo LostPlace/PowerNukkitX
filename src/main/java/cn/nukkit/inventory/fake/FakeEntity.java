@@ -2,7 +2,6 @@ package cn.nukkit.inventory.fake;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.EntityID;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.AddEntityPacket;
 import cn.nukkit.network.protocol.RemoveEntityPacket;
@@ -38,7 +37,7 @@ public class FakeEntity implements FakeBlock {
         lastPositions.addAll(this.getPlacePositions(player));
         lastPositions.forEach(position -> {
             AddEntityPacket addEntity = new AddEntityPacket();
-            addEntity.type = Registries.ENTITY.getEntityNetworkId(EntityID.VILLAGER_V2);
+            addEntity.type = Registries.ENTITY.getEntityNetworkId(this.eN);
             addEntity.entityUniqueId = this.getId();
             addEntity.entityRuntimeId = this.getId();
             addEntity.yaw = 0f;

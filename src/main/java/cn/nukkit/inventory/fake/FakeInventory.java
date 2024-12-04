@@ -1,7 +1,6 @@
 package cn.nukkit.inventory.fake;
 
 import cn.nukkit.Player;
-import cn.nukkit.Server;
 import cn.nukkit.block.BlockID;
 import cn.nukkit.event.inventory.ItemStackRequestActionEvent;
 import cn.nukkit.inventory.*;

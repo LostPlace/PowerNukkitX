@@ -650,7 +650,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             int chunkX = Level.getHashX(index);
             int chunkZ = Level.getHashZ(index);
             for (Entity entity : this.level.getChunkEntities(chunkX, chunkZ).values()) {
-                if (this != entity && !entity.closed && entity.isAlive()) {
+                if (this != entity && !entity.closed && entity.isAlive() && entity.spawnOnJoin) {
                     entity.spawnTo(this);
                 }
             }

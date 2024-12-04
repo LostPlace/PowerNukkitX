@@ -115,6 +115,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     public double motionY;
     public double motionZ;
     public int deadTicks = 0;
+    public boolean spawnOnJoin = true;
     /**
      * temporalVector，its value has no meaning
      */
@@ -287,6 +288,14 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
         return new Identifier(entityIdentifier);
     }
 
+    public void setSpawnOnJoin(boolean value) {
+        this.setSpawnOnJoin(value);
+    }
+
+    public boolean getSpawnOnJoin() {
+        return this.spawnOnJoin;
+    }
+
     /**
      * @see #getDefaultNBT(Vector3, Vector3, float, float)
      */
@@ -320,6 +329,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     @NotNull
     public static CompoundTag getDefaultNBT(@NotNull Vector3 pos, @Nullable Vector3 motion, float yaw, float pitch) {
         return new CompoundTag()
+                .putBoolean("SpawnOnJoin", true)
                 .putList("Pos", new ListTag<DoubleTag>()
                         .add(new DoubleTag(pos.x))
                         .add(new DoubleTag(pos.y))
@@ -445,6 +455,10 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
             } else {
                 this.entityUniqueId = UUID.randomUUID();
             }
+        }
+
+        if(this.namedTag.contains("SpawnOnJoin")) {
+            this.spawnOnJoin = this.namedTag.getBoolean("SpawnOnJoin");
         }
 
         if (this.namedTag.contains("ActiveEffects")) {
@@ -886,11 +900,12 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
             this.namedTag.putString("uuid", this.entityUniqueId.toString());
         }
 
-        this.namedTag.putList("Pos", new ListTag<DoubleTag>()
+        this.namedTag.putBoolean("SpawnOnJoin", spawnOnJoin)
+            .putList("Pos", new ListTag<DoubleTag>()
                 .add(new DoubleTag(this.x))
                 .add(new DoubleTag(this.y))
                 .add(new DoubleTag(this.z))
-        );
+            );
 
         this.namedTag.putList("Motion", new ListTag<DoubleTag>()
                 .add(new DoubleTag(this.motionX))

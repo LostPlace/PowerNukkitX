@@ -1662,6 +1662,8 @@ public interface BlockID {
 
     String PACKED_MUD = "minecraft:packed_mud";
 
+    String PALE_OAK_DOUBLE_SLAB = "minecraft:pale_oak_double_slab";
+
     String PALE_OAK_PLANKS = "minecraft:pale_oak_planks";
 
     String PALE_OAK_FENCE = "minecraft:pale_oak_fence";
@@ -1977,6 +1979,8 @@ public interface BlockID {
     String RESERVED6 = "minecraft:reserved6";
 
     String RESIN_CLUMP = "minecraft:resin_clump";
+
+    String RESIN_BRICK_DOUBLE_SLAB = "minecraft:resin_brick_double_slab";
 
     String RESIN_BRICK_WALL = "minecraft:resin_brick_wall";
 

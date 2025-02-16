@@ -42,7 +42,8 @@ public class BossEventPacket extends DataPacket {
     public long playerEid;
     public float healthPercent;
     public String title = "";
-    public short unknown;
+    public String filteredName = "";
+    public short darkenSky;
     public int color;
     public int overlay;
     
@@ -63,9 +64,10 @@ public class BossEventPacket extends DataPacket {
                 break;
             case TYPE_SHOW:
                 this.title = byteBuf.readString();
+                this.filteredName = byteBuf.readString();
                 this.healthPercent = byteBuf.readFloatLE();
             case TYPE_UPDATE_PROPERTIES:
-                this.unknown = (short) byteBuf.readShort();
+                this.darkenSky = (short) byteBuf.readShort();
             case TYPE_TEXTURE:
                 this.color = (int) byteBuf.readUnsignedVarInt();
                 this.overlay = (int) byteBuf.readUnsignedVarInt();
@@ -92,9 +94,10 @@ public class BossEventPacket extends DataPacket {
                 break;
             case TYPE_SHOW:
                 byteBuf.writeString(this.title);
+                byteBuf.writeString(this.filteredName);
                 byteBuf.writeFloatLE(this.healthPercent);
             case TYPE_UNKNOWN_6:
-                byteBuf.writeShort(this.unknown);
+                byteBuf.writeShort(this.darkenSky);
             case TYPE_TEXTURE:
                 byteBuf.writeUnsignedVarInt(this.color);
                 byteBuf.writeUnsignedVarInt(this.overlay);
@@ -104,6 +107,7 @@ public class BossEventPacket extends DataPacket {
                 break;
             case TYPE_TITLE:
                 byteBuf.writeString(this.title);
+                byteBuf.writeString(this.filteredName);
                 break;
         }
     }

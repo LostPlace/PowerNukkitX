@@ -34,6 +34,7 @@ import cn.nukkit.entity.effect.EffectType;
 import cn.nukkit.entity.item.EntityFishingHook;
 import cn.nukkit.entity.item.EntityItem;
 import cn.nukkit.entity.item.EntityXpOrb;
+import cn.nukkit.entity.mob.EntityBoss;
 import cn.nukkit.entity.passive.EntityHorse;
 import cn.nukkit.entity.projectile.EntityArrow;
 import cn.nukkit.entity.projectile.EntityProjectile;
@@ -635,6 +636,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
     protected void doFirstSpawn() {
         this.spawned = true;
 
+        this.getSession().syncCraftingData();
         this.getSession().syncInventory();
         this.resetInventory();
 
@@ -1289,6 +1291,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         this.setGamemode(this.gamemode, false, null, true);
         this.sendData(this.hasSpawned.values().toArray(Player.EMPTY_ARRAY), entityDataMap);
         this.spawnToAll();
+        Arrays.stream(this.level.getEntities()).filter(entity -> entity.getViewers().containsKey(this.getLoaderId()) && entity instanceof EntityBoss).forEach(entity -> ((EntityBoss) entity).addBossbar(this));
         this.refreshBlockEntity(1);
     }
 
@@ -4345,6 +4348,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
     public void refreshBlockEntity(int delay) {
         getLevel().getScheduler().scheduleDelayedTask(InternalPlugin.INSTANCE, () -> {
             for (var b : this.level.getBlockEntities().values()) {
+                if(b == null) continue;
                 if (b instanceof BlockEntitySpawnable blockEntitySpawnable) {
                     UpdateBlockPacket setAir = new UpdateBlockPacket();
                     setAir.blockRuntimeId = BlockAir.STATE.blockStateHash();

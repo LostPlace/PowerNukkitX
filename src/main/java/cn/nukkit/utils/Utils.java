@@ -1,6 +1,7 @@
 package cn.nukkit.utils;
 
 import cn.nukkit.block.Block;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.NukkitMath;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.lang.reflect.Array;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -22,6 +24,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -259,6 +262,13 @@ public class Utils {
         reverseArray(data, false);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatArray(T[]... arrays) {
+        ArrayList<T> list = new ArrayList<>();
+        for(T[] array : arrays) list.addAll(Arrays.asList(array));
+        return (T[]) Array.newInstance(arrays[0][0].getClass().getComponentType(), list.size());
+    }
+
     public static <T> T[] reverseArray(T[] array, boolean copy) {
         T[] data = array;
 
@@ -365,6 +375,13 @@ public class Utils {
             return max;
         }
         return random.nextInt(max + 1 - min) + min;
+    }
+
+    public static float rand(float min, float max) {
+        if (min == max) {
+            return max;
+        }
+        return min + random.nextFloat() * (max - min);
     }
 
     public static double rand(double min, double max) {

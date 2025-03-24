@@ -19,7 +19,6 @@ import cn.nukkit.blockentity.BlockEntitySpawnable;
 import cn.nukkit.camera.data.CameraPreset;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.utils.RawText;
-import cn.nukkit.config.ServerPropertiesKeys;
 import cn.nukkit.dialog.window.FormWindowDialog;
 import cn.nukkit.entity.Attribute;
 import cn.nukkit.entity.Entity;
@@ -269,9 +268,8 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
      */
     protected Cache<String, FormWindowDialog> dialogWindows = Caffeine.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build();
     protected Map<Long, DummyBossBar> dummyBossBars = new Long2ObjectLinkedOpenHashMap<>();
-    protected double lastRightClickTime = 0.0;
-    protected Vector3 lastRightClickPos = null;
     protected int lastInAirTick = 0;
+    protected int previousInteractTick = 0;
     private static final float ROTATION_UPDATE_THRESHOLD = 1;
     private static final float MOVEMENT_DISTANCE_THRESHOLD = 0.1f;
     private final Queue<Location> clientMovements = PlatformDependent.newMpscQueue(4);
@@ -454,6 +452,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         PlayerInteractEvent playerInteractEvent = new PlayerInteractEvent(this, this.inventory.getItemInHand(), target, face,
                 target.isAir() ? Action.LEFT_CLICK_AIR : Action.LEFT_CLICK_BLOCK);
         this.getServer().getPluginManager().callEvent(playerInteractEvent);
+        playerHandle.setInteract();
         if (playerInteractEvent.isCancelled()) {
             this.inventory.sendHeldItem(this);
             this.getLevel().sendBlocks(new Player[]{this}, new Block[]{target}, UpdateBlockPacket.FLAG_ALL_PRIORITY, 0);
@@ -804,7 +803,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                     getServer().getPluginManager().callEvent(ev);
 
                     if (!ev.isCancelled()) {
-                        final Position newPos = PortalHelper.moveToTheEnd(this);
+                        final Position newPos = PortalHelper.convertPosBetweenEndAndOverworld(this);
                         if (newPos != null) {
                             if (newPos.getLevel().getDimension() == Level.DIMENSION_THE_END) {
                                 if (teleport(newPos, TeleportCause.END_PORTAL)) {
@@ -1302,7 +1301,6 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         this.sendData(this.hasSpawned.values().toArray(Player.EMPTY_ARRAY), entityDataMap);
         this.spawnToAll();
         Arrays.stream(this.level.getEntities()).filter(entity -> entity.getViewers().containsKey(this.getLoaderId()) && entity instanceof EntityBoss).forEach(entity -> ((EntityBoss) entity).addBossbar(this));
-        this.refreshBlockEntity(1);
     }
 
     /**
@@ -1548,6 +1546,14 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
      */
     public int getLastInAirTick() {
         return this.lastInAirTick;
+    }
+
+    public int getPreviousInteractTick() {
+        return this.previousInteractTick;
+    }
+
+    public int getPreviousInteractTickDifference() {
+        return getServer().getTick() - getPreviousInteractTick();
     }
 
     /**
@@ -2237,6 +2243,12 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             }
         }
 
+        for(BlockEntity entity : this.level.getChunkBlockEntities(x, z).values()) {
+            if(entity instanceof BlockEntitySpawnable spawnable) {
+                spawnable.spawnTo(this);
+            }
+        }
+
         if (this.needDimensionChangeACK) {
             this.needDimensionChangeACK = false;
 
@@ -2336,7 +2348,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
     }
 
     public boolean awardAchievement(String achievementId) {
-        if (!Server.getInstance().getProperties().get(ServerPropertiesKeys.ACHIEVEMENTS, true)) {
+        if (!Server.getInstance().getSettings().gameplaySettings().achievements()) {
             return false;
         }
 
@@ -4348,7 +4360,6 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         this.positionChanged = true;
 
         if (switchLevel) {
-            refreshBlockEntity(10);
             refreshChunkRender();
         }
         this.resetFallDistance();
@@ -4372,32 +4383,6 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         this.setViewDistance(1);
         this.setViewDistance(32);
         this.setViewDistance(origin);
-    }
-
-    public void refreshBlockEntity(int delay) {
-        getLevel().getScheduler().scheduleDelayedTask(InternalPlugin.INSTANCE, () -> {
-            for (var b : this.level.getBlockEntities().values()) {
-                if(b == null) continue;
-                if (b instanceof BlockEntitySpawnable blockEntitySpawnable) {
-                    UpdateBlockPacket setAir = new UpdateBlockPacket();
-                    setAir.blockRuntimeId = BlockAir.STATE.blockStateHash();
-                    setAir.flags = UpdateBlockPacket.FLAG_NETWORK;
-                    setAir.x = b.getFloorX();
-                    setAir.y = b.getFloorY();
-                    setAir.z = b.getFloorZ();
-                    this.dataPacket(setAir);
-
-                    UpdateBlockPacket revertAir = new UpdateBlockPacket();
-                    revertAir.blockRuntimeId = b.getBlock().getRuntimeId();
-                    revertAir.flags = UpdateBlockPacket.FLAG_NETWORK;
-                    revertAir.x = b.getFloorX();
-                    revertAir.y = b.getFloorY();
-                    revertAir.z = b.getFloorZ();
-                    this.dataPacket(revertAir);
-                    blockEntitySpawnable.spawnTo(this);
-                }
-            }
-        }, delay, true);
     }
 
     /**

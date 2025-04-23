@@ -1,9 +1,7 @@
 package cn.nukkit.command.defaults;
 
 import cn.nukkit.Player;
-import cn.nukkit.PlayerHandle;
 import cn.nukkit.block.BlockAir;
-import cn.nukkit.block.BlockState;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.data.CommandEnum;
 import cn.nukkit.command.data.CommandParamType;
@@ -11,6 +9,8 @@ import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.command.tree.ParamList;
 import cn.nukkit.command.utils.CommandLogger;
 import cn.nukkit.entity.ai.EntityAI;
+import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemBundle;
 import cn.nukkit.item.ItemFilledMap;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
@@ -49,6 +49,10 @@ public class DebugCommand extends TestCommand implements CoreCommand {
         this.commandParameters.put("chunk", new CommandParameter[]{
                 CommandParameter.newEnum("chunk", new String[]{"chunk"}),
                 CommandParameter.newEnum("options", new String[]{"info", "regenerate", "resend", "queue"})
+        });
+        this.commandParameters.put("item", new CommandParameter[]{
+                CommandParameter.newEnum("item", new String[]{"item"}),
+                CommandParameter.newEnum("values", new String[]{"nbt", "bundle"})
         });
         this.enableParamTree();
     }
@@ -148,6 +152,25 @@ public class DebugCommand extends TestCommand implements CoreCommand {
                         return 0;
                     }
                 }
+            }
+            case "item" -> {
+                if (!sender.isPlayer())
+                    return 0;
+                Player player = sender.asPlayer();
+                switch (list.getResult(1).toString()) {
+                    case "nbt" -> {
+                        player.sendMessage(player.getInventory().getItemInHand().getNamedTag().toSNBT());
+                        return 0;
+                    }
+                    case "bundle" -> {
+                        Item item = player.getInventory().getItemInHand();
+                        if(item instanceof ItemBundle bundle) {
+                            for(Item item1 : bundle.getInventory().getContents().values()) player.sendMessage(item1.toString());
+                        }
+                        return 0;
+                    }
+                }
+                return 0;
             }
             default -> {
                 return 0;

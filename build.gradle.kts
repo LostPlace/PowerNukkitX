@@ -9,7 +9,7 @@ plugins {
     idea
     jacoco
     id("io.github.goooler.shadow") version "8.1.7"
-    id("io.freefair.lombok") version "8.4"
+    id("io.freefair.lombok") version "8.13.1"
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
@@ -31,6 +31,7 @@ dependencies {
     api(libs.bundles.netty)
     api(libs.bundles.logging)
     api(libs.annotations)
+    api(libs.jsr305)
     api(libs.gson)
     api(libs.guava)
     api(libs.commonsio)
@@ -44,22 +45,21 @@ dependencies {
     implementation(libs.asm)
     implementation(libs.jose4j)
     implementation(libs.joptsimple)
+    implementation(libs.sentry)
+    implementation(libs.sentry.log4j2)
     implementation(libs.disruptor)
     implementation(libs.oshi)
     implementation(libs.fastreflection)
     implementation(libs.terra)
     implementation(libs.bundles.compress)
     implementation(libs.bundles.terminal)
+    implementation(libs.graalvm.polyglot)
     implementation(libs.okaeri)
+    runtimeOnly(libs.bundles.graalvm.runtime)
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.commonsio)
     testImplementation(libs.commonslang3)
-
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
 }
 
 java {

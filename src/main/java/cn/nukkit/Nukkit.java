@@ -162,7 +162,7 @@ public class Nukkit {
             System.out.print((char) 0x1b + "]0;Server Stopped" + (char) 0x07);
         }
         LogManager.shutdown();
-        Runtime.getRuntime().halt(0); // force exit
+        System.exit(0); // force exit
     }
 
     private static boolean requiresShortTitle() {

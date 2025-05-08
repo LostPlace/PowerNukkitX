@@ -29,7 +29,7 @@ public class PlayerTest {
     void test_player_teleport(TestPlayer player, Level level) {
         final TestPlayer p = player;
         p.level = level;
-        p.setViewDistance(4);//view 4
+        p.setViewDistance(4); //view 4
 
         GameLoop loop = gameLoop0(p);
 
@@ -62,7 +62,7 @@ public class PlayerTest {
         final TestPlayer p = player;
         resetPlayerStatus(p);
 
-        p.setViewDistance(4);//view 4
+        p.setViewDistance(4); //view 4
         p.setPosition(new Vector3(0, 100, 0));
 
         GameLoop loop = gameLoop0(p);
@@ -92,7 +92,7 @@ public class PlayerTest {
     void test_player_chunk_unload(TestPlayer player, Level level) {
         resetPlayerStatus(player);
 
-        player.setViewDistance(4);//view 4
+        player.setViewDistance(4); //view 4
         GameLoop loop = gameLoop0(player);
 
         player.setPosition(new Vector3(0, 100, 0));

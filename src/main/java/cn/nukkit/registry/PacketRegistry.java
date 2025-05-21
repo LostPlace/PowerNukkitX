@@ -213,7 +213,6 @@ public class PacketRegistry implements IRegistry<Integer, DataPacket, Class<? ex
         this.register0(ProtocolInfo.PLAYER_START_ITEM_COOL_DOWN_PACKET, PlayerStartItemCoolDownPacket.class);
         this.register0(ProtocolInfo.CODE_BUILDER_SOURCE_PACKET, CodeBuilderSourcePacket.class);
         this.register0(ProtocolInfo.UPDATE_SUB_CHUNK_BLOCKS_PACKET, UpdateSubChunkBlocksPacket.class);
-        //powernukkitx only
         this.register0(ProtocolInfo.REQUEST_PERMISSIONS_PACKET, RequestPermissionsPacket.class);
         this.register0(ProtocolInfo.COMMAND_BLOCK_UPDATE_PACKET, CommandBlockUpdatePacket.class);
         this.register0(ProtocolInfo.SET_SCORE_PACKET, SetScorePacket.class);
@@ -259,8 +258,10 @@ public class PacketRegistry implements IRegistry<Integer, DataPacket, Class<? ex
         this.register0(ProtocolInfo.CLIENT_CAMERA_AIM_ASSIST_PACKET, ClientCameraAimAssistPacket.class);
         this.register0(ProtocolInfo.CLIENT_MOVEMENT_PREDICTION_SYNC_PACKET, ClientMovementPredictionSyncPacket.class);
         this.register0(ProtocolInfo.UPDATE_CLIENT_OPTIONS_PACKET, UpdateClientOptionsPacket.class);
-
-
+        this.register0(ProtocolInfo.CLIENTBOUND_CONTROL_SCHEME_SET_PACKET, ClientboundControlSchemeSetPacket.class);
+        this.register0(ProtocolInfo.PLAYER_VIDEO_CAPTURE_PACKET, PlayerVideoCapturePacket.class);
+        this.register0(ProtocolInfo.PLAYER_UPDATE_ENTITY_OVERRIDES_PACKET, PlayerUpdateEntityOverridesPacket.class);
+        this.register0(ProtocolInfo.PLAYER_LOCATION_PACKET, PlayerLocationPacket.class);
 
         this.PACKET_POOL.trim();
     }

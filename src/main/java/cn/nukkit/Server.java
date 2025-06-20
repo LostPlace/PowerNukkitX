@@ -57,6 +57,7 @@ import cn.nukkit.network.Network;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.PlayerListPacket;
 import cn.nukkit.network.protocol.ProtocolInfo;
+import cn.nukkit.network.protocol.types.ExperimentEntry;
 import cn.nukkit.network.protocol.types.PlayerInfo;
 import cn.nukkit.network.protocol.types.XboxLivePlayerInfo;
 import cn.nukkit.permission.BanEntry;
@@ -97,6 +98,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
+import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.impl.Iq80DBFactory;
 import org.jetbrains.annotations.ApiStatus;
@@ -116,6 +118,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
@@ -234,6 +237,7 @@ public class Server {
     private Level defaultLevel = null;
     private boolean allowNether;
     private boolean allowTheEnd;
+    private List<ExperimentEntry> experiments;
     ///
 
     Server(final String filePath, String dataPath, String pluginPath, String predefinedLanguage) {
@@ -365,6 +369,10 @@ public class Server {
         if (this.getSettings().baseSettings().waterdogpe()) {
             this.checkLoginTime = false;
         }
+
+        this.experiments = new ArrayList<>();
+        for(String experiment : settings.gameplaySettings().experiments())
+            experiments.add(new ExperimentEntry(experiment, true));
 
         this.entityMetadata = new EntityMetadataStore();
         this.playerMetadata = new PlayerMetadataStore();
@@ -925,7 +933,9 @@ public class Server {
 
         if (this.autoSave && ++this.autoSaveTicker >= this.autoSaveTicks) {
             this.autoSaveTicker = 0;
-            this.doAutoSave();
+            CompletableFuture.runAsync(() -> {
+                this.doAutoSave();
+            });
         }
 
         if (this.sendUsageTicker > 0 && --this.sendUsageTicker == 0) {
@@ -1880,6 +1890,73 @@ public class Server {
         return ImmutableMap.copyOf(playerList);
     }
 
+    /**
+     * Deletes all player data (both UUID mapping and player data) for the specified player name.
+     * This method handles the LevelDB structure used by PowerNukkitX where player data is stored
+     * in two separate databases: one for name-to-UUID mapping and another for actual player data.
+     *
+     * @param name The player name to delete (case-insensitive)
+     * @throws Exception if any LevelDB operation fails
+     */
+    public void deletePlayerData(String name) {
+        try {
+            byte[] nameBytes = name.toLowerCase(Locale.ENGLISH).getBytes(StandardCharsets.UTF_8);
+            byte[] uuidBytes = playerDataDB.get(nameBytes);
+
+            if (uuidBytes != null && uuidBytes.length == 16) {
+                ByteBuffer buffer = ByteBuffer.wrap(uuidBytes);
+                UUID uuid = new UUID(buffer.getLong(), buffer.getLong());
+                String uuidStr = uuid.toString();
+
+                playerDataDB.delete(uuidBytes);  // Delete from player data DB
+                playerDataDB.delete(nameBytes);   // Delete name-to-UUID mapping
+
+                log.info(name + " player data deleted (UUID: " + uuidStr + ")");
+            } else {
+                log.warn(name + " player not found or invalid UUID data");
+            }
+        } catch (Exception e) {
+            log.error("Error deleting player data for " + name, e);
+        }
+    }
+
+    /**
+     * Deletes all player data for the specified UUID.
+     * This handles the LevelDB structure by:
+     * 1. Deleting the main player data record
+     * 2. Finding and deleting the name-to-UUID mapping
+     *
+     * @param uuid The UUID of the player to delete
+     * @throws Exception if any LevelDB operation fails
+     */
+    public void deletePlayerData(UUID uuid) {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(16);
+            buffer.putLong(uuid.getMostSignificantBits());
+            buffer.putLong(uuid.getLeastSignificantBits());
+            byte[] uuidBytes = buffer.array();
+
+            playerDataDB.delete(uuidBytes);
+
+            try (DBIterator iterator = playerDataDB.iterator()) {
+                for (iterator.seekToFirst(); iterator.hasNext(); iterator.next()) {
+                    byte[] key = iterator.peekNext().getKey();
+                    byte[] value = iterator.peekNext().getValue();
+
+                    if (Arrays.equals(value, uuidBytes)) {
+                        playerDataDB.delete(key);
+                        String playerName = new String(key, StandardCharsets.UTF_8);
+                        log.info("Deleted name mapping for " + playerName);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error deleting player data for UUID " + uuid, e);
+        }
+    }
+
+
     // endregion
 
     // region constants - 常量
@@ -2653,6 +2730,14 @@ public class Server {
 
     public ForkJoinPool getComputeThreadPool() {
         return computeThreadPool;
+    }
+
+    public boolean allowVibrantVisuals() {
+        return settings.gameplaySettings().allowVibrantVisuals();
+    }
+
+    public List<ExperimentEntry> getExperiments() {
+        return experiments;
     }
 
     //todo NukkitConsole 会阻塞关不掉

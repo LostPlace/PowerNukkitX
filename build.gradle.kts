@@ -231,10 +231,10 @@ publishing {
 
     repositories {
         maven {
-            url = uri("https://repo.powernukkitx.org/releases")
+            url = uri("https://repo.lostplacemc.eu/lpmc")
             credentials {
-                username = findProperty("pnxUsername") as String? ?: System.getenv("PNX_REPO_USERNAME")
-                password = findProperty("pnxPassword") as String? ?: System.getenv("PNX_REPO_PASSWORD")
+                username = findProperty("lpmcUsername") as String? ?: System.getenv("PNX_REPO_USERNAME")
+                password = findProperty("lpmcPassword") as String? ?: System.getenv("PNX_REPO_PASSWORD")
             }
         }
     }

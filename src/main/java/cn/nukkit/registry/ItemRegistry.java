@@ -556,6 +556,8 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             register(ZOMBIE_SPAWN_EGG, ItemZombieSpawnEgg.class);
             register(ZOMBIE_VILLAGER_SPAWN_EGG, ItemZombieVillagerSpawnEgg.class);
             register(MUSIC_DISC_TEARS, ItemDiscTears.class);
+            //TODO: Re-add once we have all gamedata, rn its always returning UnknownBlock
+            //register(MUSIC_DISC_LAVA_CHICKEN, ItemDiscLavaChicken.class);
             register(HAPPY_GHAST_SPAWN_EGG, ItemHappyGhastSpawnEgg.class);
             register(HARNESS_BLACK, ItemHarnessBlack.class);
             register(HARNESS_BLUE, ItemHarnessBlue.class);
@@ -723,9 +725,13 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
                 if (CACHE_CONSTRUCTORS.putIfAbsent(key, c) == null) {
                     CUSTOM_ITEM_DEFINITIONS.put(key, customItem.getDefinition());
                     Registries.ITEM_RUNTIMEID.registerCustomRuntimeItem(new ItemRuntimeIdRegistry.RuntimeEntry(key, customItem.getDefinition().getRuntimeId(), true));
-                    Item ci = (Item) customItem;
-                    ci.setNetId(null);
-                    Registries.CREATIVE.addCreativeItem(ci);
+                    CompoundTag nbt = customItem.getDefinition().nbt();
+                    if (Registries.CREATIVE.shouldBeRegisteredItem(nbt)) {
+                        Item ci = (Item) customItem;
+                        ci.setNetId(null);
+                        int groupIndex = Registries.CREATIVE.resolveGroupIndexFromItemDefinition(key, nbt);
+                        Registries.CREATIVE.addCreativeItem(ci, groupIndex);
+                    }
                 } else {
                     throw new RegisterException("This item has already been registered with the identifier: " + key);
                 }
@@ -738,6 +744,7 @@ public final class ItemRegistry implements ItemID, IRegistry<String, Item, Class
             throw new RuntimeException(e);
         }
     }
+
 
     private void register0(String key, Class<? extends Item> value) {
         try {

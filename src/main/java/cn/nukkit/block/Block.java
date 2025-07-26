@@ -381,7 +381,11 @@ public abstract class Block extends Position implements Metadatable, AxisAligned
     public boolean hasFreeSpaceAbove() {
         Block above = this.up();
 
-        if (above.isAir()) {
+        if (above instanceof BlockSlab slab) {
+            return slab.isOnTop();
+        }
+
+        if (above.isTransparent()) {
             return true;
         }
 
@@ -389,9 +393,7 @@ public abstract class Block extends Position implements Metadatable, AxisAligned
         if (box != null) {
             double minY = box.getMinY();
             double relativeMinY = minY - above.getY();
-            boolean allowed = relativeMinY >= 0.5;
-
-            return allowed;
+            return relativeMinY >= 0.5;
         }
 
         return false;
@@ -593,8 +595,46 @@ public abstract class Block extends Position implements Metadatable, AxisAligned
         return blockstate;
     }
 
+    /**
+     * @deprecated Use {@link #hasTag(String)} instead.
+     */
+    @Deprecated
     public boolean is(final String blockTag) {
         return BlockTags.getTagSet(this.getId()).contains(blockTag);
+    }
+
+    /**
+     * @return if block has a string tag
+     */
+    public boolean hasTag(final String blockTag) {
+        CustomBlockDefinition def = getCustomDefinition();
+        if (def != null) {
+            CompoundTag nbt = def.nbt();
+            if (nbt.contains("blockTags")) {
+                ListTag<StringTag> tagList = nbt.getList("blockTags", StringTag.class);
+                return tagList.getAll().contains(new StringTag(blockTag));
+            }
+        }
+
+        return BlockTags.getTagSet(this.getId()).contains(blockTag);
+    }
+
+    /**
+     * @return list of tags for the block
+     */
+    public String[] getTags() {
+        CustomBlockDefinition def = getCustomDefinition();
+        if (def != null) {
+            CompoundTag nbt = def.nbt();
+            if (nbt.contains("blockTags")) {
+                ListTag<StringTag> tagList = nbt.getList("blockTags", StringTag.class);
+                return tagList.getAll().stream()
+                    .map(tag -> tag.data)
+                    .toArray(String[]::new);
+            }
+        }
+
+        return BlockTags.getTagSet(this.getId()).toArray(new String[0]);
     }
 
     public <DATATYPE, PROPERTY extends BlockPropertyType<DATATYPE>> DATATYPE getPropertyValue(PROPERTY p) {

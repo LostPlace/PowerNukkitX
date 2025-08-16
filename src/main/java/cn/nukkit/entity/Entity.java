@@ -508,7 +508,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
         this.entityDataMap.put(HEIGHT, this.getHeight());
         this.entityDataMap.put(WIDTH, this.getWidth());
         this.entityDataMap.put(STRUCTURAL_INTEGRITY, (int) this.getHealth());
-        this.sendData(this.hasSpawned.values().toArray(Player.EMPTY_ARRAY), entityDataMap);
+        //this.sendData(this.hasSpawned.values().toArray(Player.EMPTY_ARRAY), entityDataMap);
         this.setDataFlags(EnumSet.of(EntityFlag.CAN_CLIMB, EntityFlag.BREATHING, EntityFlag.HAS_COLLISION, EntityFlag.HAS_GRAVITY));
     }
 
@@ -1126,6 +1126,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     }
 
     public void sendData(Player player, EntityDataMap data) {
+        if(!this.hasSpawned.containsKey(player.getLoaderId())) return;
         SetEntityDataPacket pk = new SetEntityDataPacket();
         pk.eid = this.getId();
         pk.entityData = data == null ? this.entityDataMap : data;
@@ -1148,9 +1149,12 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
             if (player == this) {
                 continue;
             }
+            if(!this.hasSpawned.containsKey(player.getLoaderId())) return;
             player.dataPacket(pk);
         }
+
         if (this instanceof Player player) {
+            if(!this.hasSpawned.containsKey(player.getLoaderId())) return;
             player.dataPacket(pk);
         }
     }

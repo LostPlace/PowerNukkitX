@@ -236,6 +236,7 @@ publishing {
 
     repositories {
         maven {
+            name="lpmc"
             url = uri("https://repo.lostplacemc.eu/lpmc")
             credentials {
                 username = findProperty("lpmcUsername") as String? ?: System.getenv("PNX_REPO_USERNAME")

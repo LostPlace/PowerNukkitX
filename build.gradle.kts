@@ -215,36 +215,43 @@ tasks.javadoc {
 }
 
 publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-        artifactId = "server"
-        pom {
-            url.set("https://github.com/PowerNukkitX/PowerNukkitX")
-            licenses {
-                license {
-                    name.set("MIT License")
-                    url.set("https://opensource.org/licenses/MIT")
-                }
-            }
-            scm {
-                connection.set("scm:git:git://github.com/PowerNukkitX/PowerNukkitX.git")
-                developerConnection.set("scm:git:ssh://github.com/PowerNukkitX/PowerNukkitX.git")
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "server"
+            pom {
                 url.set("https://github.com/PowerNukkitX/PowerNukkitX")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/PowerNukkitX/PowerNukkitX.git")
+                    developerConnection.set("scm:git:ssh://github.com/PowerNukkitX/PowerNukkitX.git")
+                    url.set("https://github.com/PowerNukkitX/PowerNukkitX")
+                }
             }
         }
     }
 
     repositories {
         maven {
-            name="lpmc"
+            name = "pnx"
             url = uri("https://repo.lostplacemc.eu/lpmc")
             credentials {
-                username = findProperty("lpmcUsername") as String? ?: System.getenv("PNX_REPO_USERNAME")
-                password = findProperty("lpmcPassword") as String? ?: System.getenv("PNX_REPO_PASSWORD")
+                username = providers.gradleProperty("lpmcUsername")
+                    .orElse(providers.environmentVariable("PNX_REPO_USERNAME"))
+                    .orNull
+                password = providers.gradleProperty("lpmcPassword")
+                    .orElse(providers.environmentVariable("PNX_REPO_PASSWORD"))
+                    .orNull
             }
         }
     }
 }
+
 
 
 tasks.withType<JavaCompile> {

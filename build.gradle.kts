@@ -238,7 +238,7 @@ publishing {
 
     repositories {
         maven {
-            name = "pnx"
+            name = "lpmc"
             url = uri("https://repo.lostplacemc.eu/lpmc")
             credentials {
                 username = providers.gradleProperty("lpmcUsername")

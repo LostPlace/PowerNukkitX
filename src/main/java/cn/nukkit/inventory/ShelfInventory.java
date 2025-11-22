@@ -1,20 +1,19 @@
 package cn.nukkit.inventory;
 
-
-import cn.nukkit.entity.item.EntityHopperMinecart;
+import cn.nukkit.blockentity.BlockEntityHopper;
+import cn.nukkit.blockentity.BlockEntityShelf;
 import cn.nukkit.network.protocol.types.itemstack.ContainerSlotType;
 
 import java.util.Map;
 
-public class MinecartHopperInventory extends ContainerInventory {
+/**
+ * @author Buddelbubi
+ * @since 2024/11/07
+ */
+public class ShelfInventory extends ContainerInventory {
 
-    public MinecartHopperInventory(EntityHopperMinecart minecart) {
-        super(minecart, InventoryType.MINECART_HOPPER, 5);
-    }
-
-    @Override
-    public EntityHopperMinecart getHolder() {
-        return (EntityHopperMinecart) super.getHolder();
+    public ShelfInventory(InventoryHolder holder) {
+        super(holder, InventoryType.CONTAINER, 3); //No InventoryType for this one??
     }
 
     @Override
@@ -32,5 +31,15 @@ public class MinecartHopperInventory extends ContainerInventory {
             map.put(i, ContainerSlotType.INVENTORY);
         }
         return map;
+    }
+
+    @Override
+    public BlockEntityShelf getHolder() {
+        return (BlockEntityShelf) super.getHolder();
+    }
+
+    @Override
+    public boolean canCauseVibration() {
+        return true;
     }
 }

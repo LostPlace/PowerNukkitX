@@ -44,6 +44,7 @@ import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTotemOfUndying;
 import cn.nukkit.item.enchantment.Enchantment;
+import cn.nukkit.item.enchantment.EnchantmentWindBurst;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
@@ -73,6 +74,7 @@ import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.types.EntityLink;
 import cn.nukkit.network.protocol.types.PropertySyncData;
+import cn.nukkit.network.protocol.types.SwingSource;
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.registry.EntityRegistry;
 import cn.nukkit.registry.Registries;
@@ -2097,10 +2099,13 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
         }
     }
 
+    public void updateFallDistance() {
+        this.fallDistance = (float) (this.highestPosition - this.y);
+    }
+
     protected void updateFallState(boolean onGround) {
         if (onGround) {
-            fallDistance = (float) (this.highestPosition - this.y);
-
+            this.updateFallDistance();
             if (fallDistance > 0) {
                 // check if we fell into at least 1 block of water
                 var lb = this.getLevelBlock();
@@ -3053,7 +3058,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     private void close(boolean despawn) {
         if (!this.closed) {
             this.closed = true;
-
+            
             if (despawn) {
                 try {
                     EntityDespawnEvent event = new EntityDespawnEvent(this);
@@ -3393,10 +3398,10 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
         Server.broadcastPacket(players, pk);
     }
 
-    public void playActionAnimation(AnimatePacket.Action action, float rowingTime) {
+    public void playActionAnimation(AnimatePacket.Action action, SwingSource swingSource) {
         var viewers = new HashSet<>(this.getViewers().values());
         if (this.isPlayer) viewers.add((Player) this);
-        playActionAnimation(action, rowingTime, viewers);
+        playActionAnimation(action, swingSource, viewers);
     }
 
     /**
@@ -3405,14 +3410,14 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
      * 向指定玩家群体播放此实体的action动画
      *
      * @param action     the action
-     * @param rowingTime the rowing time
+     * @param swingSource the swing source
      * @param players    可视玩家 Visible Player
      */
-    public void playActionAnimation(AnimatePacket.Action action, float rowingTime, Collection<Player> players) {
+    public void playActionAnimation(AnimatePacket.Action action, SwingSource swingSource, Collection<Player> players) {
         var pk = new AnimatePacket();
         pk.action = action;
-        pk.rowingTime = rowingTime;
         pk.eid = this.getId();
+        pk.setSwingSource(swingSource);
         Server.broadcastPacket(players, pk);
     }
 

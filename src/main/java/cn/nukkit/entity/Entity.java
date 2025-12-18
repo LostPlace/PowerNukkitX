@@ -2021,7 +2021,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     }
 
     /**
-     * @deprecated Use {@link #canBePushedByEntities(boolean)} and/or {@link #canBePushedByPiston(boolean)}instead. <p>
+     * @deprecated Use {@link #canBePushedByEntities()} and/or {@link #canBePushedByPiston()} instead. <p>
      * If custom entitye use simpleBuilder.pusable() to define.
      */
     @Deprecated

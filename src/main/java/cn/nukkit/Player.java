@@ -25,7 +25,6 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.EntityInteractable;
 import cn.nukkit.entity.EntityLiving;
-import cn.nukkit.entity.EntityRideable;
 import cn.nukkit.entity.data.EntityFlag;
 import cn.nukkit.entity.data.PlayerFlag;
 import cn.nukkit.entity.data.Skin;
@@ -1013,28 +1012,21 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                 }
             }
 
-            //处理冰霜行者附魔
-            Enchantment frostWalker = inventory.getBoots().getEnchantment(Enchantment.ID_FROST_WALKER);
-            if (frostWalker != null && frostWalker.getLevel() > 0 && !this.isSpectator() && this.y >= 1 && this.y <= 255) {
-                int radius = 2 + frostWalker.getLevel();
-                for (int coordX = this.getFloorX() - radius; coordX < this.getFloorX() + radius + 1; coordX++) {
-                    for (int coordZ = this.getFloorZ() - radius; coordZ < this.getFloorZ() + radius + 1; coordZ++) {
-                        Block block = level.getBlock(coordX, this.getFloorY() - 1, coordZ);
-                        int layer = 0;
-                        if ((!block.getId().equals(Block.WATER) && (!block.getId().equals(Block.FLOWING_WATER) ||
-                                block.getPropertyValue(CommonBlockProperties.LIQUID_DEPTH) != 0)) || !block.up().isAir()) {
-                            block = block.getLevelBlockAtLayer(1);
-                            layer = 1;
-                            if ((!block.getId().equals(Block.WATER) && (!block.getId().equals(Block.FLOWING_WATER) ||
-                                    block.getPropertyValue(CommonBlockProperties.LIQUID_DEPTH) != 0)) || !block.up().isAir()) {
-                                continue;
+            if(this.isOnGround()) {
+                Enchantment frostWalker = inventory.getBoots().getEnchantment(Enchantment.ID_FROST_WALKER);
+                if (frostWalker != null && frostWalker.getLevel() > 0 && !this.isSpectator() && this.y >= 1 && this.y <= 255) {
+                    int radius = 2 + frostWalker.getLevel();
+                    for (int coordX = this.getFloorX() - radius; coordX < this.getFloorX() + radius + 1; coordX++) {
+                        for (int coordZ = this.getFloorZ() - radius; coordZ < this.getFloorZ() + radius + 1; coordZ++) {
+                            Block block = level.getBlock(coordX, this.getFloorY() - 1, coordZ);
+                            int layer = 0;
+                            if((block.isWaterLogged() && !block.canBeReplaced()) || !block.up().isAir() || (!block.isWaterLogged() && !block.getId().equals(BlockID.WATER))) continue;
+                            WaterFrostEvent ev = new WaterFrostEvent(block, this);
+                            server.getPluginManager().callEvent(ev);
+                            if (!ev.isCancelled()) {
+                                level.setBlock(block, layer, Block.get(Block.FROSTED_ICE), true, false);
+                                level.scheduleUpdate(level.getBlock(block, layer), ThreadLocalRandom.current().nextInt(20, 40));
                             }
-                        }
-                        WaterFrostEvent ev = new WaterFrostEvent(block, this);
-                        server.getPluginManager().callEvent(ev);
-                        if (!ev.isCancelled()) {
-                            level.setBlock(block, layer, Block.get(Block.FROSTED_ICE), true, false);
-                            level.scheduleUpdate(level.getBlock(block, layer), ThreadLocalRandom.current().nextInt(20, 40));
                         }
                     }
                 }
@@ -3436,8 +3428,8 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         }
 
         //dismount horse
-        if (this.riding instanceof EntityRideable entityRideable) {
-            entityRideable.dismountEntity(this);
+        if (this.riding.isRideable()) {
+            riding.dismountEntity(this);
         }
 
         unloadAllUsedChunk();
@@ -3555,12 +3547,16 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             namedTag.putInt("SpawnX", this.spawnPoint.getFloorX())
                     .putInt("SpawnY", this.spawnPoint.getFloorY())
                     .putInt("SpawnZ", this.spawnPoint.getFloorZ());
-            if (this.spawnPoint.getLevel() != null) {
+            if (this.spawnPoint.getLevel() != null && this.spawnPoint.getLevel().getProvider() != null) {
                 this.namedTag.putString("SpawnLevel", this.spawnPoint.getLevel().getName());
                 this.namedTag.putInt("SpawnDimension", this.spawnPoint.getLevel().getDimension());
             } else {
-                this.namedTag.putString("SpawnLevel", this.server.getDefaultLevel().getName());
-                this.namedTag.putInt("SpawnDimension", this.server.getDefaultLevel().getDimension());
+                if (this.server.getDefaultLevel() != null && this.server.getDefaultLevel().getProvider() != null) {
+                    this.namedTag.putString("SpawnLevel", this.server.getDefaultLevel().getName());
+                    this.namedTag.putInt("SpawnDimension", this.server.getDefaultLevel().getDimension());
+                } else {
+                    throw new IllegalStateException("Default level or default level provider is null");
+                }
             }
         }
 

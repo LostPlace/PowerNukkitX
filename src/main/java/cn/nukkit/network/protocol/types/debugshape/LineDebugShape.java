@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 
 public class LineDebugShape extends DebugShape {
-    public LineDebugShape(Vector3f location, Color color, Vector3f lineEndLocation) {
+    public LineDebugShape(Vector3f location, Color color, Vector3f lineEndLocation, @Nullable Long attachedToEntityId) {
         shapeType = ScriptDebugShapeType.LINE;
         this.location = location;
         this.color = color;

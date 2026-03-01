@@ -636,7 +636,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
 
         this.noDamageTicks = 60;
 
-        synchronized (playerChunkManager) {
+        synchronized (playerChunkManager.getUsedChunks()) {
             for (long index : playerChunkManager.getUsedChunks()) {
                 int chunkX = Level.getHashX(index);
                 int chunkZ = Level.getHashZ(index);
@@ -688,8 +688,8 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         this.sendFogStack();
         this.sendCameraPresets();
 
-        log.debug("Send Player Spawn Status Packet to {},wait init packet", getName());
         this.sendPlayStatus(PlayStatusPacket.PLAYER_SPAWN);
+        log.debug("Sent PlayStatusPacket.PLAYER_SPAWN to {}, waiting for init packet", getName());
 
         // Initialize the client before transferring the player to prevent falling (x)
         // Falling is already handled since immobile is set
@@ -2141,7 +2141,9 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                         entity.despawnFrom(this);
                     }
                 }
-                playerChunkManager.getUsedChunks().remove(index);
+                synchronized (playerChunkManager.getUsedChunks()) {
+                    playerChunkManager.getUsedChunks().remove(index);
+                }
             }
         }
     }
@@ -2187,7 +2189,9 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         }
 
         this.chunkLoadCount++;
-        this.playerChunkManager.getUsedChunks().add(Level.chunkHash(x, z));
+        synchronized (playerChunkManager.getUsedChunks()) {
+            this.playerChunkManager.getUsedChunks().add(Level.chunkHash(x, z));
+        }
         this.dataPacket(packet);
 
         if (this.spawned) {

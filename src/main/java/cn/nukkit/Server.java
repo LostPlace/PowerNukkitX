@@ -22,6 +22,7 @@ import cn.nukkit.entity.data.property.EntityProperty;
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.level.LevelInitEvent;
 import cn.nukkit.event.level.LevelLoadEvent;
+import cn.nukkit.event.network.NetworkRegisterEvent;
 import cn.nukkit.event.player.PlayerLoginEvent;
 import cn.nukkit.event.server.QueryRegenerateEvent;
 import cn.nukkit.event.server.ServerReloadEvent;
@@ -63,6 +64,7 @@ import cn.nukkit.nbt.tag.ShortTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.network.Network;
+import cn.nukkit.network.NetworkInterface;
 import cn.nukkit.network.process.NetworkState;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.PlayerListPacket;
@@ -84,6 +86,7 @@ import cn.nukkit.plugin.service.ServiceManager;
 import cn.nukkit.positiontracking.PositionTrackingService;
 import cn.nukkit.recipe.Recipe;
 import cn.nukkit.registry.RecipeRegistry;
+import cn.nukkit.registry.RegistryCache;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.resourcepacks.ResourcePackManager;
 import cn.nukkit.resourcepacks.loader.JarPluginResourcePackLoader;
@@ -120,9 +123,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -207,7 +210,7 @@ public class Server {
     private EntityMetadataStore entityMetadata;
     private PlayerMetadataStore playerMetadata;
     private LevelMetadataStore levelMetadata;
-    private Network network;
+    private NetworkInterface network;
     private int serverAuthoritativeMovementMode = 0;
     private int defaultGamemode = Integer.MAX_VALUE;
     private int autoSaveTicker = 0;
@@ -279,35 +282,37 @@ public class Server {
         instance = this;
 
         this.filePath = filePath;
-        if (!new File(dataPath + "worlds/").exists()) {
-            new File(dataPath + "worlds/").mkdirs();
+
+        File worlds, players, structures, pluginFile, commandDataFile;
+        if (!(worlds = new File(dataPath + "worlds/")).exists()) {
+            worlds.mkdirs();
         }
-        if (!new File(dataPath + "players/").exists()) {
-            new File(dataPath + "players/").mkdirs();
+        if (!(players = new File(dataPath + "players/")).exists()) {
+            players.mkdirs();
         }
-        if (!new File(dataPath + "structures/").exists()) {
-            new File(dataPath + "structures/").mkdirs();
+        if (!(structures = new File(dataPath + "structures/")).exists()) {
+            structures.mkdirs();
         }
-        if (!new File(pluginPath).exists()) {
-            new File(pluginPath).mkdirs();
+        if (!(pluginFile = new File(pluginPath)).exists()) {
+            pluginFile.mkdirs();
         }
 
         this.dataPath = new File(dataPath).getAbsolutePath() + "/";
-        this.pluginPath = new File(pluginPath).getAbsolutePath() + "/";
-        this.structurePath = new File(dataPath).getAbsolutePath() + "/structures/";
-        String commandDataPath = new File(dataPath).getAbsolutePath() + "/command_data";
-        if (!new File(commandDataPath).exists()) {
-            new File(commandDataPath).mkdirs();
+        this.pluginPath = pluginFile.getAbsolutePath() + "/";
+        this.structurePath = this.dataPath + "structures/";
+        String commandDataPath = this.dataPath + "/command_data";
+        if (!(commandDataFile = new File(commandDataPath)).exists()) {
+            commandDataFile.mkdirs();
         }
 
         this.console = new NukkitConsole(this);
         this.consoleThread = new ConsoleThread();
         this.consoleThread.start();
 
-        while(convertLegacyConfiguration());
+        while (convertLegacyConfiguration()) { /* repeat until all legacy configurations are converted */ }
 
         File config = new File(this.dataPath + "pnx.yml");
-        String chooseLanguage = null;
+        String chooseLanguage;
 
         if (!config.exists()) {
             // Config doesn't exist - use wizard config if provided, otherwise use predefined or default
@@ -356,7 +361,7 @@ public class Server {
             }
         }
         this.settings.save();
-        while(updateConfiguration());
+        while (updateConfiguration()) { /* repeat until all configuration updates are applied */ }
 
         this.computeThreadPool = new ForkJoinPool(Math.min(0x7fff, Runtime.getRuntime().availableProcessors()), new ComputeThreadPoolThreadFactory(), null, false);
 
@@ -443,25 +448,66 @@ public class Server {
         // Initialize metrics
         NukkitMetrics.startNow(this);
 
+        final RegistryCache registryCache;
+        Path registryCachePath = Path.of(settings.performanceSettings().registryCachePath());
+        {
+            RegistryCache cache = null;
+            if (settings.performanceSettings().registryCacheEnabled()) {
+                cache = RegistryCache.tryLoad(registryCachePath);
+            }
+            registryCache = cache;
+        }
+
         {//init
-            Registries.POTION.init();
-            Registries.PACKET.init();
-            Registries.ENTITY.init();
-            Registries.BLOCKENTITY.init();
-            Registries.ITEM_RUNTIMEID.init();
-            Registries.BLOCK.init();
-            Registries.BLOCKSTATE.init();
-            Registries.ITEM.init();
-            Registries.CREATIVE.init();
-            Registries.BIOME.init();
-            Registries.FUEL.init();
-            Registries.GENERATOR.init();
-            Registries.GENERATE_STAGE.init();
-            Registries.POPULATOR.init();
-            Registries.GENERATE_FEATURE.init();
-            Registries.STRUCTURE.init();
-            Registries.EFFECT.init();
-            Registries.RECIPE.init();
+            CompletableFuture<Void> blockF       = CompletableFuture.runAsync(Registries.BLOCK::init,           computeThreadPool);
+            CompletableFuture<Void> itemF        = CompletableFuture.runAsync(Registries.ITEM::init,            computeThreadPool);
+            CompletableFuture<Void> potionF      = CompletableFuture.runAsync(Registries.POTION::init,          computeThreadPool);
+            CompletableFuture<Void> packetF      = CompletableFuture.runAsync(Registries.PACKET::init,          computeThreadPool);
+            CompletableFuture<Void> entityF      = CompletableFuture.runAsync(Registries.ENTITY::init,          computeThreadPool);
+            CompletableFuture<Void> blockEntityF = CompletableFuture.runAsync(Registries.BLOCKENTITY::init,     computeThreadPool);
+            CompletableFuture<Void> itemRtIdF    = CompletableFuture.runAsync(
+                    registryCache != null
+                            ? () -> registryCache.restoreItemRuntimeId(Registries.ITEM_RUNTIMEID)
+                            : Registries.ITEM_RUNTIMEID::init,
+                    computeThreadPool);
+            CompletableFuture<Void> biomeF       = CompletableFuture.runAsync(
+                    registryCache != null
+                            ? () -> registryCache.restoreBiome(Registries.BIOME)
+                            : Registries.BIOME::init,
+                    computeThreadPool);
+            CompletableFuture<Void> fuelF        = CompletableFuture.runAsync(Registries.FUEL::init,            computeThreadPool);
+            CompletableFuture<Void> generatorF   = CompletableFuture.runAsync(Registries.GENERATOR::init,       computeThreadPool);
+            CompletableFuture<Void> genStageF    = CompletableFuture.runAsync(Registries.GENERATE_STAGE::init,  computeThreadPool);
+            CompletableFuture<Void> populatorF   = CompletableFuture.runAsync(Registries.POPULATOR::init,       computeThreadPool);
+            CompletableFuture<Void> genFeatF     = CompletableFuture.runAsync(Registries.GENERATE_FEATURE::init,computeThreadPool);
+            CompletableFuture<Void> effectF      = CompletableFuture.runAsync(Registries.EFFECT::init,          computeThreadPool);
+
+            CompletableFuture<Void> blockStateF  = blockF.thenRunAsync(
+                    registryCache != null
+                            ? registryCache::restoreBlockStateColors
+                            : Registries.BLOCKSTATE::init,
+                    computeThreadPool);
+            CompletableFuture<Void> structureF   = blockF.thenRunAsync(Registries.STRUCTURE::init, computeThreadPool);
+            CompletableFuture<Void> creativeF    = CompletableFuture.allOf(itemF, blockStateF)
+                    .thenRunAsync(
+                            registryCache != null
+                                    ? () -> registryCache.restoreCreative(Registries.CREATIVE)
+                                    : Registries.CREATIVE::init,
+                            computeThreadPool);
+            CompletableFuture<Void> recipeF      = creativeF.thenRunAsync(
+                    registryCache != null
+                            ? () -> Registries.RECIPE.init(registryCache.getRecipePktBytes())
+                            : Registries.RECIPE::init,
+                    computeThreadPool);
+
+            CompletableFuture.allOf(potionF, packetF, entityF, blockEntityF, itemRtIdF, biomeF,
+                    fuelF, generatorF, genStageF, populatorF, genFeatF, structureF, effectF,
+                    creativeF, recipeF).join();
+
+            if (settings.performanceSettings().registryCacheEnabled() && registryCache == null) {
+                RegistryCache.save(registryCachePath);
+            }
+
             Profession.init();
             String a = BlockTags.ACACIA;
             String b = ItemTags.ARROW;
@@ -553,7 +599,6 @@ public class Server {
         loadLevels();
 
         this.queryRegenerateEvent = new QueryRegenerateEvent(this, 5);
-        this.network = new Network(this);
         this.getTickingAreaManager().loadAllTickingArea();
 
         if (this.getDefaultLevel() == null) {
@@ -566,6 +611,15 @@ public class Server {
         this.autoSaveTicks = settings.baseSettings().autosaveDelay();
 
         this.enablePlugins(PluginLoadOrder.POSTWORLD);
+
+        NetworkRegisterEvent networkRegisterEvent = new NetworkRegisterEvent(new Network(this));
+        this.pluginManager.callEvent(networkRegisterEvent);
+
+        NetworkInterface networkInterface = networkRegisterEvent.getNetworkInterface();
+
+        this.getLogger().debug("Registering network interface: " + networkInterface.getClass().getCanonicalName());
+        this.network = networkInterface;
+
         EntityProperty.buildEntityProperty();
         EntityProperty.buildPlayerProperty();
 
@@ -797,7 +851,7 @@ public class Server {
             log.debug("Unloading all levels");
             for (Level level : this.levelArray) {
                 this.unloadLevel(level, true);
-                while(level.isThreadRunning()) Thread.sleep(1);
+                while (level.isThreadRunning()) Thread.sleep(10); // TODO: This is just a workaround, we need to apply proper thread synchronization to ensure the level thread is stopped before proceeding with the shutdown process.
             }
             if (positionTrackingService != null) {
                 log.debug("Closing position tracking service");
@@ -816,7 +870,9 @@ public class Server {
             }
             NukkitMetrics.closeNow(this);
             //close threadPool
-            ForkJoinPool.commonPool().shutdownNow();
+            try (ForkJoinPool pool = ForkJoinPool.commonPool()) {
+                pool.shutdownNow();
+            }
             this.computeThreadPool.shutdownNow();
             //todo other things
         } catch (Exception e) {
@@ -933,6 +989,7 @@ public class Server {
                 } catch (Exception e) {
                     log.error(this.getLanguage().tr("nukkit.level.tickError",
                             level.getFolderPath(), Utils.getExceptionMessage(e)), e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -1386,7 +1443,7 @@ public class Server {
         return this.queryRegenerateEvent;
     }
 
-    public Network getNetwork() {
+    public NetworkInterface getNetwork() {
         return network;
     }
 
@@ -2333,7 +2390,10 @@ public class Server {
             log.error("The levelConfig is not specified and no config.json exists under the {} path", path);
             return false;
         }
-
+        if(levelConfig == null) {
+            log.error("Could not load level " + name, new LevelException("Level config is not a valid"));
+            return false;
+        }
         for (var entry : levelConfig.generators().entrySet()) {
             LevelConfig.GeneratorConfig generatorConfig = entry.getValue();
             var provider = LevelProviderManager.getProviderByName(levelConfig.format());

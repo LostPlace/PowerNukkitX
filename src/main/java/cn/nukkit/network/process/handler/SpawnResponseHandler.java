@@ -13,7 +13,6 @@ import cn.nukkit.registry.ItemRegistry;
 import cn.nukkit.registry.ItemRuntimeIdRegistry;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.registry.VoxelShapeRegistry;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,10 +106,6 @@ public class SpawnResponseHandler extends BedrockSessionPacketHandler {
 
         server.addOnlinePlayer(player);
         server.onPlayerCompleteLoginSequence(player);
-
-        if (player.isOp() || player.hasPermission("nukkit.textcolor")) {
-            player.setRemoveFormat(false);
-        }
     }
 
     private void startGame() {

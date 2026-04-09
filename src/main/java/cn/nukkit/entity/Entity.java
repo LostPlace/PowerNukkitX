@@ -1369,7 +1369,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
                 if (player.getOffhandInventory().getItem(0) instanceof ItemTotemOfUndying) {
                     totem = true;
                     isOffhand = true;
-                } else if (player.getInventory().getItemInHand() instanceof ItemTotemOfUndying) {
+                } else if (player.getInventory().getItemInMainHand() instanceof ItemTotemOfUndying) {
                     totem = true;
                 }
                 // Resurrection Totem Implementation
@@ -4313,9 +4313,10 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     }
 
     public void setAbsorption(float absorption) {
-        if (absorption != this.absorption) {
-            this.absorption = absorption;
-        }
+        this.absorption = absorption;
+        Attribute attribute = this.attributes.computeIfAbsent(Attribute.ABSORPTION, Attribute::getAttribute);
+        attribute.setValue(absorption);
+        this.syncAttribute(attribute);
     }
 
     public void syncAttribute(Attribute attribute) {
@@ -4631,7 +4632,6 @@ public abstract class Entity extends Location implements Metadatable, EntityID, 
     }
 
     public boolean onInteract(Player player, Item item) {
-        this.despawnable = false;
         this.setPersistent(true);
         return false;
     }

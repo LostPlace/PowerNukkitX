@@ -222,7 +222,6 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
     /**
      * Whether to remove the color character in the chat of the changed player as §c §1
      */
-    protected boolean removeFormat = true;
     protected String displayName;
     protected static final int RESOURCE_PACK_CHUNK_SIZE = 8 * 1024; // 8KB
     protected Vector3 sleeping = null;
@@ -406,11 +405,11 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             double miningTimeRequired;
 
             if (this.breakingBlock instanceof CustomBlock customBlock) {
-                miningTimeRequired = customBlock.breakTime(this.inventory.getItemInHand(), this);
-            } else miningTimeRequired = this.breakingBlock.calculateBreakTime(this.inventory.getItemInHand(), this);
+                miningTimeRequired = customBlock.breakTime(this.inventory.getItemInMainHand(), this);
+            } else miningTimeRequired = this.breakingBlock.calculateBreakTime(this.inventory.getItemInMainHand(), this);
 
             if (miningTimeRequired > 0) {
-                Item hand = this.inventory.getItemInHand();
+                Item hand = this.inventory.getItemInMainHand();
                 boolean hasCustomDigger = hand != null && !hand.isNull() && hand.getCustomItemComponent("minecraft:digger") != null;
                 boolean useServerSideBreakVisuals = this.breakingBlock instanceof CustomBlock || hasCustomDigger;
 
@@ -472,7 +471,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         }
 
         Block target = this.level.getBlock(pos);
-        PlayerInteractEvent playerInteractEvent = new PlayerInteractEvent(this, this.inventory.getItemInHand(), target, face,
+        PlayerInteractEvent playerInteractEvent = new PlayerInteractEvent(this, this.inventory.getItemInMainHand(), target, face,
                 target.isAir() ? Action.LEFT_CLICK_AIR : Action.LEFT_CLICK_BLOCK);
         this.getServer().getPluginManager().callEvent(playerInteractEvent);
         playerHandle.setInteract();
@@ -485,7 +484,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             return;
         }
 
-        target.onTouch(pos, this.getInventory().getItemInHand(), face, 0, 0, 0, this, playerInteractEvent.getAction());
+        target.onTouch(pos, this.getInventory().getItemInMainHand(), face, 0, 0, 0, this, playerInteractEvent.getAction());
 
         Block block = target.getSide(face);
         if (block.getId().equals(Block.FIRE) || block.getId().equals(BlockID.SOUL_FIRE)) {
@@ -500,7 +499,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             if (this.isSurvival() || this.isAdventure()) {
                 this.getFoodData().exhaust(0.005);
                 if (!i.equals(oldItem) || i.getCount() != oldItem.getCount()) {
-                    inventory.setItemInHand(i);
+                    inventory.setItemInMainHand(i);
                     inventory.sendHeldItem(this.getViewers().values());
                 }
             }
@@ -516,7 +515,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             this.breakingBlockTime = currentBreak;
             this.blockBreakProgress = 0;
 
-            Item hand = this.inventory.getItemInHand();
+            Item hand = this.inventory.getItemInMainHand();
             double miningTimeRequired = target instanceof CustomBlock customBlock ? customBlock.breakTime(hand, this) : target.calculateBreakTime(hand, this);
             int breakTime = (int) Math.ceil(miningTimeRequired * 20);
 
@@ -562,7 +561,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             return;
         }
 
-        Item handItem = this.getInventory().getItemInHand();
+        Item handItem = this.getInventory().getItemInMainHand();
         Item clone = handItem.clone();
 
         boolean canInteract = this.canInteract(blockPos.add(0.5, 0.5, 0.5), this.isCreative() ? 13 : 7);
@@ -575,7 +574,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                 }
 
                 if (Objects.equals(clone.getId(), handItem.getId()) || handItem.isNull()) {
-                    inventory.setItemInHand(handItem, false);
+                    inventory.setItemInMainHand(handItem, false);
                 } else {
                     log.debug("Tried to set item {} but {} had item {} in their hand slot", handItem.getId(), this.getName(), clone.getId());
                 }
@@ -1744,25 +1743,12 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
     }
 
     /**
-     * Retrieves {@link #removeFormat}
+     * Checks if the player has permission to use text colors in chat and signs.
      *
-     * @return boolean
+     * @return True if the player has the "nukkit.textcolor" permission, false otherwise.
      */
-    public boolean getRemoveFormat() {
-        return removeFormat;
-    }
-
-    /**
-     * Set {@link #removeFormat} to the specified value
-     *
-     * @param remove Whether remove the formatting character
-     */
-    public void setRemoveFormat(boolean remove) {
-        this.removeFormat = remove;
-    }
-
-    public void setRemoveFormat() {
-        this.setRemoveFormat(true);
+    public boolean canUseTextColor() {
+        return this.hasPermission("nukkit.textcolor");
     }
 
     /**
@@ -2623,6 +2609,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         pk.entityId = this.getId();
         pk.entries = new Attribute[]{
                 Attribute.getAttribute(Attribute.HEALTH).setMaxValue(this.getHealthMax()).setValue(health > 0 ? (health < getHealthMax() ? health : getHealthMax()) : 0),
+                Attribute.getAttribute(Attribute.ABSORPTION).setValue(this.getAbsorption()),
                 Attribute.getAttribute(Attribute.MAX_HUNGER).setValue(this.getFoodData().getFood()),
                 Attribute.getAttribute(Attribute.MOVEMENT_SPEED).setValue(this.getMovementSpeed()),
                 Attribute.getAttribute(Attribute.EXPERIENCE_LEVEL).setValue(this.getExperienceLevel()),
@@ -2714,18 +2701,12 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                 this.checkNearEntities();
             }
 
-            Item itemInHand = this.getInventory().getItemInHand();
+            Item itemInHand = this.getInventory().getItemInMainHand();
             if (!itemInHand.isNull() && this.isUsingItem(itemInHand.getId())) {
                 itemInHand.whileUsing(this);
             }
 
             this.entityBaseTick(tickDiff);
-
-            if (this.getServer().getDifficulty() == 0 || this.level.getGameRules().getBoolean(GameRule.NATURAL_REGENERATION)) {
-                if (this.getHealthCurrent() < this.getHealthMax() && this.ticksLived % 20 == 0) {
-                    this.heal(1);
-                }
-            }
 
             if (this.isOnFire() && this.lastUpdate % 10 == 0) {
                 if (this.isCreative() && !this.isInsideOfFire()) {
@@ -2936,7 +2917,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
 
         this.resetInventory();
 
-        if (this.removeFormat) {
+        if (!this.canUseTextColor()) {
             message = TextFormat.clean(message, true);
         }
 
@@ -3828,7 +3809,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         }
         super.setHealthCurrent(health);
         Attribute attribute = this.attributes.computeIfAbsent(Attribute.HEALTH, Attribute::getAttribute);
-        attribute.setMaxValue(this.getAbsorption() % 2 != 0 ? this.getHealthMax() + 1 : this.getHealthMax()).setValue(health > 0 ? (health < getHealthMax() ? health : getHealthMax()) : 0);
+        attribute.setMaxValue(this.getHealthMax()).setValue(health > 0 ? (health < getHealthMax() ? health : getHealthMax()) : 0);
         if (this.spawned) {
             UpdateAttributesPacket pk = new UpdateAttributesPacket();
             pk.entries = new Attribute[]{attribute};
@@ -3842,7 +3823,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         super.setHealthMax(maxHealth);
 
         Attribute attribute = this.attributes.computeIfAbsent(Attribute.HEALTH, Attribute::getAttribute);
-        attribute.setMaxValue(this.getAbsorption() % 2 != 0 ? this.getHealthMax() + 1 : this.getHealthMax()).setValue(health > 0 ? (health < getHealthMax() ? health : getHealthMax()) : 0);
+        attribute.setMaxValue(this.getHealthMax()).setValue(health > 0 ? (health < getHealthMax() ? health : getHealthMax()) : 0);
         if (this.spawned) {
             UpdateAttributesPacket pk = new UpdateAttributesPacket();
             pk.entries = new Attribute[]{attribute};
@@ -4035,10 +4016,10 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
 
     @Override
     public void setAbsorption(float absorption) {
-        if (absorption != this.absorption) {
-            this.absorption = absorption;
-            Attribute attribute = this.attributes.computeIfAbsent(Attribute.ABSORPTION, Attribute::getAttribute);
-            attribute.setValue(absorption);
+        super.setAbsorption(absorption);
+
+        Attribute attribute = this.attributes.get(Attribute.ABSORPTION);
+        if (attribute != null) {
             this.syncAttribute(attribute);
         }
     }
@@ -5059,7 +5040,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
                         itemsWithMending.add(inventory.getSize() + i);
                     }
                 }
-                if (inventory.getItemInHand().hasEnchantment(Enchantment.ID_MENDING)) {
+                if (inventory.getItemInMainHand().hasEnchantment(Enchantment.ID_MENDING)) {
                     itemsWithMending.add(inventory.getHeldItemIndex());
                 }
                 if (!itemsWithMending.isEmpty()) {

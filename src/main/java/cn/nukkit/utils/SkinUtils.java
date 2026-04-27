@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+@Deprecated
 public class SkinUtils {
     /*public static SkinAnimation getAnimation(JsonObject element) {
         float frames = element.get("Frames").getAsFloat();

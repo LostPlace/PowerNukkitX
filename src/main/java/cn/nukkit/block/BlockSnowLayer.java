@@ -109,7 +109,7 @@ public class BlockSnowLayer extends BlockFallable {
 
     @Override
     public boolean canBeReplaced() {
-        return getSnowHeight() < HEIGHT.getMax();
+        return getSnowHeight() < HEIGHT.getMax() && getLevelBlockAtLayer(1).isAir();
     }
 
     @Override
@@ -129,6 +129,14 @@ public class BlockSnowLayer extends BlockFallable {
             }
             other.setSnowHeight(other.getSnowHeight() + 1);
             return level.setBlock(other, other, true);
+        }
+
+        if (block.getSnowloggingLevel() > 0 && !block.isSnowLogged()) {
+            if (!level.setBlock(this, 0, this, true)) {
+                return false;
+            }
+            level.setBlock(this, 1, block, true, false);
+            return true;
         }
 
         Block down = down();
@@ -160,7 +168,17 @@ public class BlockSnowLayer extends BlockFallable {
         if (layer != 0) {
             return super.onBreak(item);
         }
-        return this.getLevel().setBlock(this, 0, getLevelBlockAtLayer(1), true, true);
+
+        Block layer1 = getLevelBlockAtLayer(1);
+        if (layer1.isAir()) {
+            return super.onBreak(item);
+        }
+
+        if (!this.getLevel().setBlock(this, 0, layer1, true, false)) {
+            return false;
+        }
+        this.getLevel().setBlock(this, 1, get(AIR), true, true);
+        return true;
     }
 
     @Override
@@ -170,31 +188,45 @@ public class BlockSnowLayer extends BlockFallable {
         }
 
         Block layer1 = getLevelBlockAtLayer(1);
-        if (!layer1.getId().equals(TALL_GRASS)) {
+        if (layer1.isAir()) {
             return;
         }
 
         // Clear the layer1 block and do a small hack as workaround a vanilla client rendering bug
+        if (!newBlock.isAir() && !newBlock.getBlockState().equals(layer1.getBlockState())) {
+            return;
+        }
+
+        Block finalBlock = newBlock.isAir() ? layer1 : newBlock;
         Level level = getLevel();
-        level.setBlock(this, 0, layer1, true, false);
-        level.setBlock(this, 1, get(AIR), true, false);
-        level.setBlock(this, 0, newBlock, true, false);
-        getLevel().getScheduler().scheduleDelayedTask(InternalPlugin.INSTANCE, () -> {
+
+        if (layer1.getId().equals(TALL_GRASS)) {
+            level.setBlock(this, 0, layer1, true, false);
+            level.setBlock(this, 1, get(AIR), true, false);
+            level.setBlock(this, 0, finalBlock, true, false);
+            getLevel().getScheduler().scheduleDelayedTask(InternalPlugin.INSTANCE, () -> {
+                Player[] target = level.getChunkPlayers(getChunkX(), getChunkZ()).values().toArray(Player.EMPTY_ARRAY);
+                Vector3[] blocks = {getLocation()};
+                level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 0, false);
+                level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 1, false);
+            }, 10);
+
             Player[] target = level.getChunkPlayers(getChunkX(), getChunkZ()).values().toArray(Player.EMPTY_ARRAY);
             Vector3[] blocks = {getLocation()};
             level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 0, false);
             level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 1, false);
-        }, 10);
+            return;
+        }
 
-        Player[] target = level.getChunkPlayers(getChunkX(), getChunkZ()).values().toArray(Player.EMPTY_ARRAY);
-        Vector3[] blocks = {getLocation()};
-        level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 0, false);
-        level.sendBlocks(target, blocks, UpdateBlockPacket.FLAG_ALL_PRIORITY, 1, false);
+        if (newBlock.isAir()) {
+            level.setBlock(this, 0, layer1, true, false);
+        }
+        level.setBlock(this, 1, get(AIR), true, false);
     }
 
     @Override
     public int onUpdate(int type) {
-        super.onUpdate(type);
+        if(super.onUpdate(type) == type) return type;
         if (type == Level.BLOCK_UPDATE_RANDOM) {
             BiomeDefinitionData biomeDefinition = Registries.BIOME.get(getLevel().getBiomeId(getFloorX(), this.getFloorY(), getFloorZ())).second();
             if (Registries.BIOME.containsTag(BiomeTags.WARM, biomeDefinition) || this.getLevel().getBlockLightAt(getFloorX(), getFloorY(), getFloorZ()) >= 10) {
@@ -229,7 +261,13 @@ public class BlockSnowLayer extends BlockFallable {
         }
 
         int snowHeight = toMelt.getPropertyValue(HEIGHT) - layers;
-        Block newState = snowHeight < 0 ? get(AIR) : Block.get(getBlockState().setPropertyValue(PROPERTIES, HEIGHT, snowHeight));
+        Block newState;
+        if (snowHeight < 0) {
+            Block layer1 = toMelt.getLevelBlockAtLayer(1);
+            newState = layer1.isAir() ? get(AIR) : layer1;
+        } else {
+            newState = Block.get(getBlockState().setPropertyValue(PROPERTIES, HEIGHT, snowHeight));
+        }
         BlockFadeEvent event = new BlockFadeEvent(toMelt, newState);
         level.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) {

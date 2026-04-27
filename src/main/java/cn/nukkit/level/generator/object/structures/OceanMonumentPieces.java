@@ -128,7 +128,7 @@ public class OceanMonumentPieces {
                     for (int z = z0; z <= z1; ++z) {
                         BlockState block = this.getBlock(level, x, y, z, boundingBox);
                         if (!FILL_KEEP.contains(block)) {
-                            if (this.getWorldY(y) > SEA_LEVEL && block.getIdentifier() != Block.WATER && block.getIdentifier() != Block.FLOWING_WATER) {
+                            if (this.getWorldY(y) >= SEA_LEVEL && block.getIdentifier() != Block.WATER && block.getIdentifier() != Block.FLOWING_WATER) {
                                 this.placeBlock(level, BlockAir.STATE, x, y, z, boundingBox);
                             } else {
                                 this.placeBlock(level, FILL_BLOCK, x, y, z, boundingBox);
@@ -194,7 +194,10 @@ public class OceanMonumentPieces {
                                     .putList("Rotation", NbtType.FLOAT, Arrays.asList(0f, 0f))
                                     .build()
                     );
-                    guardian.spawnToAll();
+                    if (guardian != null) {
+                        guardian.setPersistent(true);
+                        guardian.spawnToAll();
+                    }
                 }
 
                 return true;

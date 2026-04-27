@@ -13,6 +13,7 @@ import cn.nukkit.level.generator.ChunkGenerateContext;
 import cn.nukkit.level.generator.object.BlockManager;
 import cn.nukkit.level.generator.object.RandomizableContainer;
 import cn.nukkit.level.generator.populator.Populator;
+import cn.nukkit.level.generator.populator.placement.StructurePlacement;
 import cn.nukkit.level.structure.PNXStructure;
 import cn.nukkit.math.BlockVector3;
 import cn.nukkit.registry.Registries;
@@ -87,8 +88,15 @@ public class ShipwreckPopulator extends Populator {
             RIGHTSIDEUP_FRONTHALF_DEGRADED,
             RIGHTSIDEUP_BACKHALF_DEGRADED
     };
-    protected static final int SPACING = 24;
-    protected static final int SEPARATION = 4;
+
+    public static final StructurePlacement PLACEMENT = new StructurePlacement(StructurePlacement.PlacementSettings.builder()
+            .salt(165745295L)
+            .minDistance(4)
+            .maxDistance(24)
+            .isBiomeValid(biome -> {
+                return Registries.BIOME.getTags(biome).contains(BiomeTags.OCEAN) || Registries.BIOME.getTags(biome).contains(BiomeTags.BEACH);
+            })
+            .build());
 
 
     @Override
@@ -100,11 +108,9 @@ public class ShipwreckPopulator extends Populator {
         random.setSeed(level.getSeed() ^ Level.chunkHash(chunkX, chunkZ));
         int biome = chunk.getBiomeId(5, chunk.getHeightMap(5, 5), 5);
         BiomeDefinitionData definition = Registries.BIOME.get(biome).second();
-        if ((Registries.BIOME.containsTag(BiomeTags.OCEAN, definition) || Registries.BIOME.containsTag(BiomeTags.BEACH, definition))
-                && chunkX == (((chunkX < 0 ? (chunkX - SPACING + 1) : chunkX) / SPACING) * SPACING) + random.nextBoundedInt(SPACING - SEPARATION)
-                && chunkZ == (((chunkZ < 0 ? (chunkZ - SPACING + 1) : chunkZ) / SPACING) * SPACING) + random.nextBoundedInt(SPACING - SEPARATION)) {
+        if (PLACEMENT.canGenerate(level.getSeed(), random, chunkX, chunkZ, biome)) {
             PNXStructure template;
-            boolean beach =  Registries.BIOME.containsTag(BiomeTags.BEACH, definition);
+            boolean beach = Registries.BIOME.containsTag(BiomeTags.BEACH, definition);
             if (beach) {
                 template = STRUCTURE_LOCATION_BEACHED[random.nextInt(STRUCTURE_LOCATION_BEACHED.length)];
             } else {

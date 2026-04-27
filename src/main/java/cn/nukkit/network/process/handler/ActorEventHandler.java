@@ -4,7 +4,6 @@ import cn.nukkit.Player;
 import cn.nukkit.PlayerHandle;
 import cn.nukkit.Server;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemFood;
 import cn.nukkit.network.process.PacketHandler;
 import cn.nukkit.network.process.PlayerSessionHolder;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorEvent;
@@ -23,23 +22,30 @@ public class ActorEventHandler implements PacketHandler<ActorEventPacket> {
             return;
         }
 
-        if (packet.getType().equals(ActorEvent.FEED)) {
-            if (packet.getData() == 0 || packet.getTargetRuntimeID() != player.getId()) {
+
+        if (packet.getType().equals(ActorEvent.FEED) || packet.getType().equals(ActorEvent.DRINK_MILK)) {
+            if (packet.getTargetRuntimeID() != player.getId()) {
                 return;
             }
 
             Item hand = player.getInventory().getItemInMainHand();
-            if (!(hand instanceof ItemFood)) {
+            if (!hand.isConsumable()) {
                 return;
             }
 
-            final int predictedData = (hand.getRuntimeId() << 16) | hand.getDamage();
-            if (packet.getData() != predictedData) {
+            if (packet.getType() == ActorEvent.FEED && packet.getData() == 0) {
+                return;
+            }
+
+            int predictedData = (hand.getRuntimeId() << 16) | hand.getDamage();
+            if (packet.getType() == ActorEvent.FEED && packet.getData() != predictedData) {
                 return;
             }
 
             packet.setTargetRuntimeID(player.getId());
-            packet.setData(predictedData);
+            if (packet.getType().equals(ActorEvent.FEED)) {
+                packet.setData(predictedData);
+            }
 
             player.sendPacket(packet);
             Server.broadcastPacket(player.getViewers().values(), packet);

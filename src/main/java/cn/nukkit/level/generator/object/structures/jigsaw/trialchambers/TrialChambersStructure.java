@@ -14,10 +14,8 @@ import cn.nukkit.entity.effect.PotionType;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Level;
-import cn.nukkit.level.Location;
 import cn.nukkit.level.generator.object.BlockManager;
 import cn.nukkit.level.generator.object.RandomizableContainer;
-import cn.nukkit.level.generator.object.RuledObjectGenerator;
 import cn.nukkit.level.generator.object.structures.StructureHelper;
 import cn.nukkit.level.generator.object.structures.jigsaw.JigsawStructure;
 import cn.nukkit.level.generator.object.structures.jigsaw.pool.StructurePool;
@@ -41,7 +39,7 @@ import java.util.Map;
  *
  * @author Buddelbubi
  */
-public class TrialChambersStructure extends JigsawStructure implements RuledObjectGenerator {
+public class TrialChambersStructure extends JigsawStructure {
 
     private static final String START = "trial_chambers/chamber/end";
     private static final String HALLWAY_FALLBACK = "trial_chambers/hallway/fallback";
@@ -601,27 +599,6 @@ public class TrialChambersStructure extends JigsawStructure implements RuledObje
 
     private static StructurePool.Entry entry(String structureName, int weight) {
         return new StructurePool.Entry(structureName, weight);
-    }
-
-    @Override
-    public String getName() {
-        return "trial_chamber";
-    }
-
-    protected static final int MIN_DISTANCE = 12;
-    protected static final int MAX_DISTANCE = 34;
-
-    @Override
-    public boolean canGenerateAt(Location location) {
-        int chunkX = location.getChunkX();
-        int chunkZ = location.getChunkZ();
-        Level level = location.getLevel();
-        RandomSourceProvider random = new Xoroshiro128(level.getSeed() ^ Level.chunkHash(chunkX, chunkZ));
-
-        if (!((chunkX < 0 ? (chunkX - MAX_DISTANCE - 1) / MAX_DISTANCE : chunkX / MAX_DISTANCE) * MAX_DISTANCE + random.nextBoundedInt(MAX_DISTANCE - MIN_DISTANCE) == chunkX && (chunkZ < 0 ? (chunkZ - MAX_DISTANCE - 1) / MAX_DISTANCE : chunkZ / MAX_DISTANCE) * MAX_DISTANCE + random.nextBoundedInt(MAX_DISTANCE - MIN_DISTANCE) == chunkZ)) {
-            return false;
-        }
-        return true;
     }
 
     protected static class CorridorChestPopulator extends RandomizableContainer {

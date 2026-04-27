@@ -82,7 +82,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -154,7 +153,9 @@ public class Level implements Metadatable {
     public static int COMPRESSION_LEVEL = 8;
     private static int levelIdCounter = 1;
     private static int chunkLoaderCounter = 1;
-    private static final double INV_CHUNK_SIZE = 1.0 / 16.0;
+
+    public static final int CHUNK_SIZE = 16;
+    private static final double INV_CHUNK_SIZE = 1.0d / CHUNK_SIZE;
     // endregion finals - number finals
 
     private static final Set<String> randomTickBlocks = new HashSet<>(64);  // The blocks that can randomly tick
@@ -278,6 +279,7 @@ public class Level implements Metadatable {
         randomTickBlocks.add(BlockID.CLOSED_EYEBLOSSOM);
         randomTickBlocks.add(BlockID.OPEN_EYEBLOSSOM);
         randomTickBlocks.add(BlockID.WEEPING_VINES);
+        randomTickBlocks.add(BlockID.WATER);
     }
 
     @NonComputationAtomic
@@ -2344,19 +2346,19 @@ public class Level implements Metadatable {
     }
 
     public void updateBlockLight() {
-        ObjectSet<Long2ObjectMap.Entry<IntOpenHashSet>> blockLightQueue;
+        Long2ObjectMap<IntOpenHashSet> pendingBlockLight = new Long2ObjectOpenHashMap<>(8);
         synchronized (this.blockLightQueue) {
-            blockLightQueue = this.blockLightQueue.long2ObjectEntrySet();
+            pendingBlockLight.putAll(this.blockLightQueue);
             this.blockLightQueue.clear();
         }
+        
         try {
-
             Queue<Long> lightPropagationQueue = new ConcurrentLinkedQueue<>();
             Queue<Object[]> lightRemovalQueue = new ConcurrentLinkedQueue<>();
             Long2ObjectOpenHashMap<Object> visited = new Long2ObjectOpenHashMap<>();
             Long2ObjectOpenHashMap<Object> removalVisited = new Long2ObjectOpenHashMap<>();
 
-            var iter = blockLightQueue.iterator();
+            var iter = pendingBlockLight.long2ObjectEntrySet().iterator();
             while (iter.hasNext()) {
                 var entry = iter.next();
                 long index = entry.getLongKey();
@@ -2949,7 +2951,7 @@ public class Level implements Metadatable {
 
     public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseTransaction data, Player player, boolean playSound) {
         Block target = this.getBlock(vector);
-        Block block = target.canBeReplaced() ? target : target.getSide(face);
+        Block block = target.canBeReplaced() ? target : (target.getSnowloggingLevel() > 0 && item.getBlock() instanceof BlockSnowLayer ? target : target.getSide(face));
 
         float fx = data.getClickPosition().getX();
         float fy = data.getClickPosition().getY();
@@ -3039,6 +3041,7 @@ public class Level implements Metadatable {
 
         // Check for valid placement conditions
         if (!(block.canBeReplaced() ||
+                (block.getSnowloggingLevel() > 0 && hand instanceof BlockSnowLayer) ||
                 (hand instanceof BlockSlab && hand.getId().equals(block.getId())) ||
                 hand instanceof BlockCandle)) {
             return null;

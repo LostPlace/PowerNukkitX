@@ -33,10 +33,9 @@ public abstract class BlockFallable extends BlockSolid {
                 if (event.isCancelled()) {
                     return type;
                 }
-
                 drop(NbtMap.EMPTY);
+                return type;
             }
-            return type;
         }
         return 0;
     }

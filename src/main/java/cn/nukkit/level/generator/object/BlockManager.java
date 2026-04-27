@@ -105,7 +105,11 @@ public class BlockManager {
     }
 
     public Block getCachedBlock(int x, int y, int z) {
-        return this.caches.getOrDefault(hashXYZ(x, y, z, 0), BlockAir.STATE.toBlock(new Position(x, y, z, level)));
+        return getCachedBlock(x, y, z, BlockAir.STATE.toBlock(new Position(x, y, z, level)));
+    }
+
+    public Block getCachedBlock(int x, int y, int z, Block fallback) {
+        return this.caches.getOrDefault(hashXYZ(x, y, z, 0), fallback);
     }
 
     public void setBlockStateAt(Vector3 blockVector3, BlockState blockState) {
@@ -244,24 +248,40 @@ public class BlockManager {
 
     public void applySubChunkUpdate(List<Block> blockList, Predicate<Block> predicate, boolean queueSave) {
         if (predicate != null) {
-            blockList = blockList.stream().filter(predicate).toList();
+            ArrayList<Block> filtered = new ArrayList<>(blockList.size());
+            for (Block block : blockList) {
+                if (predicate.test(block)) {
+                    filtered.add(block);
+                }
+            }
+            blockList = filtered;
         }
-        HashMap<IChunk, ArrayList<Block>> chunks = new HashMap<>();
-        HashMap<SubChunkEntry, UpdateSubChunkBlocksPacket> batchs = new HashMap<>();
+        if (blockList.isEmpty()) {
+            applyHooks();
+            places.clear();
+            caches.clear();
+            return;
+        }
+        HashMap<IChunk, ArrayList<Block>> chunks = new HashMap<>(Math.max(16, blockList.size() >> 3));
+        var players = level.getPlayers().values();
+        boolean shouldBroadcast = !players.isEmpty();
+        HashMap<SubChunkEntry, UpdateSubChunkBlocksPacket> batchs = shouldBroadcast ? new HashMap<>(Math.max(16, blockList.size() >> 2)) : null;
         for (var b : blockList) {
             ArrayList<Block> chunk = chunks.computeIfAbsent(level.getChunk(b.getChunkX(), b.getChunkZ(), true), c -> new ArrayList<>());
             chunk.add(b);
-            UpdateSubChunkBlocksPacket batch = batchs.computeIfAbsent(new SubChunkEntry(b.getChunkX() << 4, (b.getFloorY() >> 4) << 4, b.getChunkZ() << 4), s -> {
-                final UpdateSubChunkBlocksPacket packet = new UpdateSubChunkBlocksPacket();
-                packet.setChunkX(s.x);
-                packet.setChunkY(s.y);
-                packet.setChunkZ(s.z);
-                return packet;
-            });
-            if (b.layer == 1) {
-                batch.getExtraBlocks().add(new BlockChangeEntry(b.asBlockVector3().toNetwork(), new RuntimeBlockDefinition((int) b.getBlockState().unsignedBlockStateHash()), 0, -1, ActorBlockSyncMessageId.NONE));
-            } else {
-                batch.getStandardBlocks().add(new BlockChangeEntry(b.asBlockVector3().toNetwork(), new RuntimeBlockDefinition((int) b.getBlockState().unsignedBlockStateHash()), 0, -1, ActorBlockSyncMessageId.NONE));
+            if (shouldBroadcast) {
+                UpdateSubChunkBlocksPacket batch = batchs.computeIfAbsent(new SubChunkEntry(b.getChunkX() << 4, (b.getFloorY() >> 4) << 4, b.getChunkZ() << 4), s -> {
+                    final UpdateSubChunkBlocksPacket packet = new UpdateSubChunkBlocksPacket();
+                    packet.setChunkX(s.x);
+                    packet.setChunkY(s.y);
+                    packet.setChunkZ(s.z);
+                    return packet;
+                });
+                if (b.layer == 1) {
+                    batch.getExtraBlocks().add(new BlockChangeEntry(b.asBlockVector3().toNetwork(), new RuntimeBlockDefinition((int) b.getBlockState().unsignedBlockStateHash()), 0, -1, ActorBlockSyncMessageId.NONE));
+                } else {
+                    batch.getStandardBlocks().add(new BlockChangeEntry(b.asBlockVector3().toNetwork(), new RuntimeBlockDefinition((int) b.getBlockState().unsignedBlockStateHash()), 0, -1, ActorBlockSyncMessageId.NONE));
+                }
             }
         }
         chunks.entrySet().parallelStream().forEach(entry -> {
@@ -270,10 +290,35 @@ public class BlockManager {
 
             if (!key.isGenerated()) level.syncGenerateChunk(key.getX(), key.getZ());
             key.batchProcess(unsafeChunk -> {
-                value.forEach(b -> {
-                    unsafeChunk.setBlockState(b.getFloorX() & 15, b.getFloorY(), b.getFloorZ() & 15, b.getBlockState(), b.layer);
-                });
-                unsafeChunk.recalculateHeightMap();
+                int[] highestNewColumnY = new int[16 * 16];
+                boolean[] touchedColumn = new boolean[16 * 16];
+                int[] touchedColumnIndexes = new int[16 * 16];
+                int touchedCount = 0;
+                for (Block b : value) {
+                    int localX = b.getFloorX() & 15;
+                    int localZ = b.getFloorZ() & 15;
+                    int floorY = b.getFloorY();
+                    unsafeChunk.setBlockState(localX, floorY, localZ, b.getBlockState(), b.layer);
+                    if (b.layer == 0 && !b.isAir()) {
+                        int columnIndex = (localZ << 4) | localX;
+                        if (!touchedColumn[columnIndex]) {
+                            touchedColumn[columnIndex] = true;
+                            touchedColumnIndexes[touchedCount++] = columnIndex;
+                            highestNewColumnY[columnIndex] = floorY;
+                        } else if (floorY > highestNewColumnY[columnIndex]) {
+                            highestNewColumnY[columnIndex] = floorY;
+                        }
+                    }
+                }
+                for (int i = 0; i < touchedCount; i++) {
+                    int columnIndex = touchedColumnIndexes[i];
+                    int localX = columnIndex & 15;
+                    int localZ = columnIndex >> 4;
+                    int highestNewY = highestNewColumnY[columnIndex];
+                    if (highestNewY > unsafeChunk.getHeightMap(localX, localZ)) {
+                        unsafeChunk.setHeightMap(localX, localZ, highestNewY);
+                    }
+                }
             });
             if (queueSave) {
                 key.setChanged();
@@ -288,8 +333,10 @@ public class BlockManager {
             }
         }
 
-        for (var p : batchs.values()) {
-            Server.broadcastPacket(level.getPlayers().values(), p);
+        if (shouldBroadcast) {
+            for (var p : batchs.values()) {
+                Server.broadcastPacket(players, p);
+            }
         }
         places.clear();
         caches.clear();

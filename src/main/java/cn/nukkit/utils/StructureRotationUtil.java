@@ -12,6 +12,7 @@ import cn.nukkit.block.property.type.BlockPropertyType;
 import cn.nukkit.block.property.type.EnumPropertyType;
 import cn.nukkit.math.BlockFace;
 import lombok.experimental.UtilityClass;
+import org.cloudburstmc.protocol.bedrock.data.structure.Rotation;
 
 import java.util.EnumMap;
 
@@ -235,5 +236,9 @@ public class StructureRotationUtil {
         BlockState result = state;
         for (int i = 0; i < 2; i++) result = clockwise90(result);
         return result;
+    }
+
+    public static Rotation rotateBy(Rotation self, Rotation other) {
+        return Rotation.values()[(self.ordinal() + other.ordinal()) & 0x3];
     }
 }

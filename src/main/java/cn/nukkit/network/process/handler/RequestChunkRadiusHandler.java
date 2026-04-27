@@ -18,6 +18,6 @@ public class RequestChunkRadiusHandler implements PacketHandler<RequestChunkRadi
             holder.disconnect(DisconnectFailReason.UNEXPECTED_PACKET);
             return;
         }
-        holder.getPlayer().setViewDistance(Math.max(2, holder.getPlayer().getViewDistance()));
+        holder.getPlayer().setViewDistance(packet.getChunkRadius());
     }
 }

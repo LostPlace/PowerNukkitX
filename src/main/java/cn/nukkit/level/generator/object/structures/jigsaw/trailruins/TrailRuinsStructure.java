@@ -11,20 +11,14 @@ import cn.nukkit.blockentity.BlockEntityBrushable;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Level;
-import cn.nukkit.level.Location;
 import cn.nukkit.level.generator.object.BlockManager;
-import cn.nukkit.level.generator.object.RuledObjectGenerator;
 import cn.nukkit.level.generator.object.structures.StructureHelper;
 import cn.nukkit.level.generator.object.structures.jigsaw.JigsawStructure;
 import cn.nukkit.level.generator.object.structures.jigsaw.pool.StructurePool;
 import cn.nukkit.level.generator.object.structures.jigsaw.pool.StructurePoolCollection;
 import cn.nukkit.level.structure.PNXStructure;
 import cn.nukkit.math.BlockVector3;
-import cn.nukkit.registry.Registries;
-import cn.nukkit.tags.BiomeTags;
 import cn.nukkit.utils.random.RandomSourceProvider;
-import cn.nukkit.utils.random.Xoroshiro128;
-import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,14 +26,29 @@ import java.util.List;
 import java.util.Map;
 
 import static cn.nukkit.block.BlockAir.STATE;
-import static cn.nukkit.block.BlockID.*;
+import static cn.nukkit.block.BlockID.BLUE_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.BROWN_CANDLE;
+import static cn.nukkit.block.BlockID.DEADBUSH;
+import static cn.nukkit.block.BlockID.FLOWER_POT;
+import static cn.nukkit.block.BlockID.GREEN_CANDLE;
+import static cn.nukkit.block.BlockID.LIGHT_BLUE_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.MAGENTA_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.OAK_HANGING_SIGN;
+import static cn.nukkit.block.BlockID.PINK_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.PURPLE_CANDLE;
+import static cn.nukkit.block.BlockID.PURPLE_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.RED_CANDLE;
+import static cn.nukkit.block.BlockID.RED_STAINED_GLASS_PANE;
+import static cn.nukkit.block.BlockID.SPRUCE_HANGING_SIGN;
+import static cn.nukkit.block.BlockID.WHEAT;
+import static cn.nukkit.block.BlockID.YELLOW_STAINED_GLASS_PANE;
 
 /**
  * Trail Ruins for PowerNukkitX
  * @author Buddelbubi
  * @since 2026/03/31
  */
-public class TrailRuinsStructure extends JigsawStructure implements RuledObjectGenerator {
+public class TrailRuinsStructure extends JigsawStructure {
 
     private static final StructurePoolCollection COLLECTION;
     private final Map<BlockVector3, TrailRuinsLoot> pendingBrushLoot = new HashMap<>();
@@ -253,30 +262,6 @@ public class TrailRuinsStructure extends JigsawStructure implements RuledObjectG
 
     private static StructurePool.Entry entry(String structureName, int weight) {
         return new StructurePool.Entry(structureName, weight);
-    }
-
-    @Override
-    public String getName() {
-        return "trail_ruins";
-    }
-
-    protected static final int MIN_DISTANCE = 8;
-    protected static final int MAX_DISTANCE = 34;
-
-    @Override
-    public boolean canGenerateAt(Location location) {
-        int x = location.getFloorX();
-        int y = location.getFloorY();
-        int z = location.getFloorZ();
-        int chunkX = location.getChunkX();
-        int chunkZ = location.getChunkZ();
-        Level level = location.getLevel();
-        Xoroshiro128 random = new Xoroshiro128(level.getSeed() ^ Level.chunkHash(chunkX, chunkZ));
-
-        int biome = level.getBiomeId(x, y, z);
-        BiomeDefinitionData definition = Registries.BIOME.get(biome).second();
-        return Registries.BIOME.containsTag(BiomeTags.HAS_STRUCTURE_TRAIL_RUINS, definition) &&
-                ((chunkX < 0 ? (chunkX - MAX_DISTANCE - 1) / MAX_DISTANCE : chunkX / MAX_DISTANCE) * MAX_DISTANCE + random.nextBoundedInt(MAX_DISTANCE - MIN_DISTANCE) == chunkX && (chunkZ < 0 ? (chunkZ - MAX_DISTANCE - 1) / MAX_DISTANCE : chunkZ / MAX_DISTANCE) * MAX_DISTANCE + random.nextBoundedInt(MAX_DISTANCE - MIN_DISTANCE) == chunkZ);
     }
 
     private enum TrailRuinsLoot {

@@ -31,7 +31,7 @@ public class BlockStateTest {
                 if(BlockRegistry.shouldSkip(name)) continue; //Skip blocks
                 BlockState state = Registries.BLOCKSTATE.get(hash);
                 if(state == null) {
-                    throw new RuntimeException(name + " (" + hash + ") was not a part of block_palette.nbt");
+                    throw new IllegalStateException(name + " (" + hash + ") was not a part of block_palette.nbt");
                 } else {
                     if(!state.getIdentifier().equals(name)) {
                         throw new RuntimeException("BlockState " + hash + " was not " + name + ". Instead it is " + state.getIdentifier());

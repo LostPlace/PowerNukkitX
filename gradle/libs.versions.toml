@@ -84,7 +84,7 @@ bedrock-connection   = { module = "org.cloudburstmc.protocol:bedrock-connection"
 [bundles]
 terminal        = ["jline-reader",      "jline-terminal",   "jline-terminaljna",    "consoleappender"   ]
 test            = ["junit",             "mockito",          "jmh-core",             "jmh-generator"     ]
-netty           = [      "netty-epoll",      "netty-kqueue"                              ]
+netty           = ["netty-epoll",       "netty-kqueue"                                                  ]
 compress        = ["snappy",            "lz4",              "libdeflate"                                ]
 leveldb         = ["leveldb",           "leveldb-api"                                                   ]
 logging         = ["log4j-slf4j2-impl", "log4j-core"                                                    ]

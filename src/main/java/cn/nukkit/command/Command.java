@@ -3,7 +3,7 @@ package cn.nukkit.command;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.blockentity.ICommandBlock;
-import cn.nukkit.command.data.CommandData;
+import cn.nukkit.command.data.NukkitCommandData;
 import cn.nukkit.command.data.CommandDataVersions;
 import cn.nukkit.command.data.CommandEnum;
 import cn.nukkit.command.data.CommandOverload;
@@ -77,7 +77,7 @@ public abstract class Command {
 
     protected ParamTree paramTree;
 
-    protected CommandData commandData;
+    protected NukkitCommandData commandData;
 
     protected boolean serverSideOnly;
 
@@ -94,7 +94,7 @@ public abstract class Command {
     }
 
     public Command(String name, String description, String usageMessage, String[] aliases) {
-        this.commandData = new CommandData(name);
+        this.commandData = new NukkitCommandData(name);
         this.name = name.toLowerCase(Locale.ENGLISH); // Uppercase letters crash the client?!?
         this.nextLabel = name;
         this.label = name;
@@ -108,9 +108,9 @@ public abstract class Command {
     /**
      * Returns the default command data for this command.
      *
-     * @return the default {@link CommandData} instance
+     * @return the default {@link NukkitCommandData} instance
      */
-    public CommandData getDefaultCommandData() {
+    public NukkitCommandData getDefaultCommandData() {
         return this.commandData;
     }
 
@@ -166,7 +166,7 @@ public abstract class Command {
 
         var plugin = this instanceof PluginCommand<?> pluginCommand ? pluginCommand.getPlugin() : InternalPlugin.INSTANCE;
 
-        CommandData customData = this.commandData.clone();
+        NukkitCommandData customData = this.commandData.clone();
 
         if (getAliases().length > 0) {
             List<String> aliases = new ArrayList<>(Arrays.asList(getAliases()));

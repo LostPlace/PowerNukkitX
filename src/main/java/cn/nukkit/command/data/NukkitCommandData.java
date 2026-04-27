@@ -3,6 +3,8 @@ package cn.nukkit.command.data;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.RequiredArgsConstructor;
+import org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandOverloadData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandPermissionLevel;
@@ -53,10 +55,10 @@ import java.util.Set;
  * @see CommandOverload
  * @see Flag
  * @see CommandPermissionLevel
- * @see ChainedSubCommandData
+ * @see NukkitChainedSubCommandData
  */
 @RequiredArgsConstructor
-public class CommandData implements Cloneable {
+public class NukkitCommandData implements Cloneable {
     private final String name;
     /**
      * The description of the command, used for help and localization.
@@ -81,7 +83,7 @@ public class CommandData implements Cloneable {
     /**
      * The list of chained subcommands for advanced command structures.
      */
-    public List<ChainedSubCommandData> subcommands = new ArrayList<>();
+    public List<NukkitChainedSubCommandData> subcommands = new ArrayList<>();
 
     /**
      * Creates a clone of this CommandData instance.
@@ -91,11 +93,11 @@ public class CommandData implements Cloneable {
      * @return a cloned CommandData instance
      */
     @Override
-    public CommandData clone() {
+    public NukkitCommandData clone() {
         try {
-            return (CommandData) super.clone();
+            return (NukkitCommandData) super.clone();
         } catch (Exception e) {
-            return new CommandData(this.name);
+            return new NukkitCommandData(this.name);
         }
     }
 
@@ -171,13 +173,13 @@ public class CommandData implements Cloneable {
         }
     }
 
-    public org.cloudburstmc.protocol.bedrock.data.command.CommandData toNetwork() {
-        final Set<org.cloudburstmc.protocol.bedrock.data.command.CommandData.Flag> flags = new ObjectOpenHashSet<>();
+    public CommandData toNetwork() {
+        final Set<CommandData.Flag> flags = new ObjectOpenHashSet<>();
         for (Flag flag : this.flags) {
-            flags.add(org.cloudburstmc.protocol.bedrock.data.command.CommandData.Flag.valueOf(flag.name()));
+            flags.add(CommandData.Flag.valueOf(flag.name()));
         }
-        final List<org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData> subCommands = new ObjectArrayList<>();
-        for (ChainedSubCommandData subcommand : this.subcommands) {
+        final List<ChainedSubCommandData> subCommands = new ObjectArrayList<>();
+        for (NukkitChainedSubCommandData subcommand : this.subcommands) {
             subCommands.add(subcommand.toNetwork());
         }
         final List<CommandOverloadData> overloadDataList = new ObjectArrayList<>();
@@ -194,7 +196,7 @@ public class CommandData implements Cloneable {
                     )
             );
         }
-        return new org.cloudburstmc.protocol.bedrock.data.command.CommandData(
+        return new CommandData(
                 this.name,
                 this.description,
                 flags,

@@ -17,7 +17,7 @@ import cn.nukkit.blockentity.BlockEntitySign;
 import cn.nukkit.blockentity.BlockEntitySpawnable;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
-import cn.nukkit.command.data.CommandData;
+import cn.nukkit.command.data.NukkitCommandData;
 import cn.nukkit.command.data.CommandDataVersions;
 import cn.nukkit.command.data.CommandOverload;
 import cn.nukkit.command.utils.RawText;
@@ -5798,7 +5798,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
 
             boolean valid = false;
 
-            for (CommandData v : versions.versions) {
+            for (NukkitCommandData v : versions.versions) {
                 if (v == null) continue;
                 if (v.overloads == null || v.overloads.isEmpty()) continue;
 

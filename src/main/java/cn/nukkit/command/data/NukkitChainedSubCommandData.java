@@ -2,6 +2,7 @@ package cn.nukkit.command.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Data;
+import org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ import java.util.List;
  * @since PowerNukkitX 2.0.0
  */
 @Data
-public class ChainedSubCommandData {
+public class NukkitChainedSubCommandData {
     /**
      * The name of the chained sub-command.
      */
@@ -53,7 +54,7 @@ public class ChainedSubCommandData {
      * Usage:
      * <ul>
      *   <li>Instantiate with two strings to represent a mapping.</li>
-     *   <li>Use in the {@link ChainedSubCommandData#values} list.</li>
+     *   <li>Use in the {@link NukkitChainedSubCommandData#values} list.</li>
      * </ul>
      * <p>
      * Example:
@@ -69,12 +70,12 @@ public class ChainedSubCommandData {
     public record Value(String first, String second) {
     }
 
-    public org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData toNetwork() {
-        final List<org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData.Value> list = new ObjectArrayList<>();
+    public ChainedSubCommandData toNetwork() {
+        final List<ChainedSubCommandData.Value> list = new ObjectArrayList<>();
         for (Value value : this.values) {
-            list.add(new org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData.Value(value.first, value.second));
+            list.add(new ChainedSubCommandData.Value(value.first, value.second));
         }
-        final org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData data = new org.cloudburstmc.protocol.bedrock.data.command.ChainedSubCommandData(
+        final ChainedSubCommandData data = new ChainedSubCommandData(
                 this.name
         );
         data.getValues().addAll(list);

@@ -5,7 +5,9 @@ import cn.nukkit.entity.item.EntityFallingBlock;
 import cn.nukkit.event.block.BlockFallEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
+import cn.nukkit.math.Vector3;
 import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.nbt.NbtType;
 
 import java.util.Arrays;
@@ -47,16 +49,12 @@ public abstract class BlockFallable extends BlockSolid {
     }
 
     protected EntityFallingBlock createFallingEntity(NbtMap customNbt) {
-        NbtMap nbt = NbtMap.builder()
-                .putList("Pos", NbtType.DOUBLE, Arrays.asList(this.x + 0.5, this.y, this.z + 0.5))
-                .putList("Motion", NbtType.DOUBLE, Arrays.asList(0.0, 0.0, 0.0))
-                .putList("Rotation", NbtType.FLOAT, Arrays.asList(0f, 0f))
-                .putCompound("Block", this.blockstate.getBlockStateTag())
-                .build();
+      final NbtMapBuilder builder = Entity.getDefaultNBT(new Vector3(this.x + 0.5, this.y, this.z + 0.5)).toBuilder()
+                .putCompound("Block", this.blockstate.getBlockStateTag());
 
-        nbt.putAll(customNbt);
+        builder.putAll(customNbt);
 
-        EntityFallingBlock fall = (EntityFallingBlock) Entity.createEntity(Entity.FALLING_BLOCK, this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+        EntityFallingBlock fall = (EntityFallingBlock) Entity.createEntity(Entity.FALLING_BLOCK, this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), builder.build());
 
         if (fall != null) {
             fall.spawnToAll();

@@ -330,7 +330,7 @@ public class CommandParameter {
         try {
             CommandParamType type = this.type;
             if (type == null) {
-                type = CommandParamType.TEXT;
+                type = CommandParamType.RAW_TEXT;
             }
             final Field field = CommandParam.class.getDeclaredField(type.name());
             final CommandParam param = (CommandParam) field.get(null);

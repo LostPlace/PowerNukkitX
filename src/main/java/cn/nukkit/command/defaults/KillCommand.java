@@ -29,7 +29,7 @@ public class KillCommand extends VanillaCommand {
                 + "nukkit.command.kill.other");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("player", true, CommandParamType.TARGET)
+                CommandParameter.newType("player", true, CommandParamType.SELECTION)
         });
         this.enableParamTree();
     }

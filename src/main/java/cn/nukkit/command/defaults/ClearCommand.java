@@ -24,7 +24,7 @@ public class ClearCommand extends VanillaCommand {
         this.setPermission("nukkit.command.clear");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("player", true, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", true, CommandParamType.SELECTION, new PlayersNode()),
                 GenericParameter.ITEM_NAME.get(true),
                 CommandParameter.newType("data", true, CommandParamType.INT),
                 CommandParameter.newType("maxCount", true, CommandParamType.INT)

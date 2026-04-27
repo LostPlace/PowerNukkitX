@@ -62,7 +62,7 @@ public class GameruleCommand extends VanillaCommand {
         if (!unknownGameRules.isEmpty()) {
             this.commandParameters.put("unknownGameRules", new CommandParameter[]{
                     CommandParameter.newEnum("rule", new CommandEnum("UnknownGameRule", unknownGameRules)),
-                    CommandParameter.newType("value", true, CommandParamType.STRING)
+                    CommandParameter.newType("value", true, CommandParamType.ID)
             });
         }
         this.enableParamTree();

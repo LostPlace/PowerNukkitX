@@ -22,11 +22,11 @@ public class SpreadPlayersCommand extends VanillaCommand {
         this.setPermission("nukkit.command.spreadplayers");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("x", false, CommandParamType.VALUE),
-                CommandParameter.newType("z", false, CommandParamType.VALUE),
+                CommandParameter.newType("x", false, CommandParamType.VAL),
+                CommandParameter.newType("z", false, CommandParamType.VAL),
                 CommandParameter.newType("spreadDistance", false, CommandParamType.FLOAT),
                 CommandParameter.newType("maxRange", false, CommandParamType.FLOAT),
-                CommandParameter.newType("victim", false, CommandParamType.TARGET)
+                CommandParameter.newType("victim", false, CommandParamType.SELECTION)
         });
         this.random = ThreadLocalRandom.current();
         this.enableParamTree();

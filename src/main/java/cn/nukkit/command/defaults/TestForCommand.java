@@ -18,7 +18,7 @@ public class TestForCommand extends VanillaCommand {
         this.setPermission("nukkit.command.testfor");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("victim", false, CommandParamType.TARGET)
+                CommandParameter.newType("victim", false, CommandParamType.SELECTION)
         });
         this.enableParamTree();
     }

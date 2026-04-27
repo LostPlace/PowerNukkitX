@@ -37,15 +37,15 @@ public class CameraCommand extends VanillaCommand {
         this.setPermission("nukkit.command.camera");
         this.commandParameters.clear();
         this.commandParameters.put("clear", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("clear", false, new String[]{"clear"})
         });
         this.commandParameters.put("fade", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("fade", false, new String[]{"fade"})
         });
         this.commandParameters.put("fade-color", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("fade", false, new String[]{"fade"}),
                 CommandParameter.newEnum("color", false, new String[]{"color"}),
                 CommandParameter.newType("red", false, CommandParamType.INT),
@@ -53,7 +53,7 @@ public class CameraCommand extends VanillaCommand {
                 CommandParameter.newType("blue", false, CommandParamType.INT)
         });
         this.commandParameters.put("fade-time-color", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("fade", false, new String[]{"fade"}),
                 CommandParameter.newEnum("time", false, new String[]{"time"}),
                 CommandParameter.newType("fadeInSeconds", false, CommandParamType.FLOAT),
@@ -65,38 +65,38 @@ public class CameraCommand extends VanillaCommand {
                 CommandParameter.newType("blue", false, CommandParamType.INT)
         });
         this.commandParameters.put("set-default", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("default", true, new String[]{"default"})
         });
         this.commandParameters.put("set-rot", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("rot", false, new String[]{"rot"}),
-                CommandParameter.newType("xRot", false, CommandParamType.VALUE, new RelativeFloatNode()),
-                CommandParameter.newType("yRot", false, CommandParamType.VALUE, new RelativeFloatNode())
+                CommandParameter.newType("xRot", false, CommandParamType.VAL, new RelativeFloatNode()),
+                CommandParameter.newType("yRot", false, CommandParamType.VAL, new RelativeFloatNode())
         });
         this.commandParameters.put("set-pos", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("pos", false, new String[]{"pos"}),
                 CommandParameter.newType("position", false, CommandParamType.POSITION),
         });
         this.commandParameters.put("set-pos-rot", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("pos", false, new String[]{"pos"}),
                 CommandParameter.newType("position", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("rot", false, new String[]{"rot"}),
-                CommandParameter.newType("xRot", false, CommandParamType.VALUE, new RelativeFloatNode()),
-                CommandParameter.newType("yRot", false, CommandParamType.VALUE, new RelativeFloatNode())
+                CommandParameter.newType("xRot", false, CommandParamType.VAL, new RelativeFloatNode()),
+                CommandParameter.newType("yRot", false, CommandParamType.VAL, new RelativeFloatNode())
         });
         this.commandParameters.put("set-ease-default", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("ease", false, new String[]{"ease"}),
@@ -105,18 +105,18 @@ public class CameraCommand extends VanillaCommand {
                 CommandParameter.newEnum("default", true, new String[]{"default"})
         });
         this.commandParameters.put("set-ease-rot", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("ease", false, new String[]{"ease"}),
                 CommandParameter.newType("easeTime", false, CommandParamType.FLOAT, new FloatNode()),
                 CommandParameter.newEnum("easeType", false, EASE_TYPES),
                 CommandParameter.newEnum("rot", false, new String[]{"rot"}),
-                CommandParameter.newType("xRot", false, CommandParamType.VALUE, new RelativeFloatNode()),
-                CommandParameter.newType("yRot", false, CommandParamType.VALUE, new RelativeFloatNode())
+                CommandParameter.newType("xRot", false, CommandParamType.VAL, new RelativeFloatNode()),
+                CommandParameter.newType("yRot", false, CommandParamType.VAL, new RelativeFloatNode())
         });
         this.commandParameters.put("set-ease-pos", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("ease", false, new String[]{"ease"}),
@@ -126,7 +126,7 @@ public class CameraCommand extends VanillaCommand {
                 CommandParameter.newType("position", false, CommandParamType.POSITION),
         });
         this.commandParameters.put("set-ease-pos-rot", new CommandParameter[]{
-                CommandParameter.newType("players", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("players", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("preset", false, CommandEnum.CAMERA_PRESETS),
                 CommandParameter.newEnum("ease", false, new String[]{"ease"}),
@@ -135,8 +135,8 @@ public class CameraCommand extends VanillaCommand {
                 CommandParameter.newEnum("pos", false, new String[]{"pos"}),
                 CommandParameter.newType("position", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("rot", false, new String[]{"rot"}),
-                CommandParameter.newType("xRot", false, CommandParamType.VALUE, new RelativeFloatNode()),
-                CommandParameter.newType("yRot", false, CommandParamType.VALUE, new RelativeFloatNode())
+                CommandParameter.newType("xRot", false, CommandParamType.VAL, new RelativeFloatNode()),
+                CommandParameter.newType("yRot", false, CommandParamType.VAL, new RelativeFloatNode())
         });
         this.enableParamTree();
     }

@@ -32,34 +32,34 @@ public class FillCommand extends VanillaCommand {
         this.setPermission("nukkit.command.fill");
         this.getCommandParameters().clear();
         this.addCommandParameters("fill-with-states", new CommandParameter[]{
-                CommandParameter.newType("from", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("to", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("from", false, CommandParamType.POSITION),
+                CommandParameter.newType("to", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
-                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATES),
+                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATE),
                 CommandParameter.newEnum("oldBlockHandling", true, new String[]{"destroy", "hollow", "keep", "outline"}),
         });
         this.addCommandParameters("fill-no-states", new CommandParameter[]{
-                CommandParameter.newType("from", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("to", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("from", false, CommandParamType.POSITION),
+                CommandParameter.newType("to", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
                 CommandParameter.newEnum("oldBlockHandling", true, new String[]{"destroy", "hollow", "keep", "outline"}),
         });
         this.addCommandParameters("replace", new CommandParameter[]{
-                CommandParameter.newType("from", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("to", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("from", false, CommandParamType.POSITION),
+                CommandParameter.newType("to", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
-                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATES),
+                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATE),
                 CommandParameter.newEnum("oldBlockHandling", false, new String[]{"replace"}),
                 CommandParameter.newEnum("replaceTileName", true, CommandEnum.ENUM_BLOCK),
-                CommandParameter.newType("replaceBlockStates", true, CommandParamType.BLOCK_STATES)
+                CommandParameter.newType("replaceBlockStates", true, CommandParamType.BLOCK_STATE)
         });
         this.addCommandParameters("replace-no-states", new CommandParameter[]{
-                CommandParameter.newType("from", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("to", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("from", false, CommandParamType.POSITION),
+                CommandParameter.newType("to", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
                 CommandParameter.newEnum("oldBlockHandling", false, new String[]{"replace"}),
                 CommandParameter.newEnum("replaceTileName", true, CommandEnum.ENUM_BLOCK),
-                CommandParameter.newType("replaceBlockStates", true, CommandParamType.BLOCK_STATES)
+                CommandParameter.newType("replaceBlockStates", true, CommandParamType.BLOCK_STATE)
         });
         this.enableParamTree();
     }

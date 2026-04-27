@@ -25,9 +25,9 @@ public class TestForBlocksCommand extends VanillaCommand {
         this.setPermission("nukkit.command.testforblocks");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("begin", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("end", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("destination", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("begin", false, CommandParamType.POSITION),
+                CommandParameter.newType("end", false, CommandParamType.POSITION),
+                CommandParameter.newType("destination", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("mode", true, new String[]{"all", "masked"})
         });
         this.enableParamTree();

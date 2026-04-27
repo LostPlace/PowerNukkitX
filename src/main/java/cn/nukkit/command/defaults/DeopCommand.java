@@ -21,7 +21,7 @@ public class DeopCommand extends VanillaCommand {
         super(name, "commands.deop.description");
         this.setPermission("nukkit.command.op.take");
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new IPlayersNode())
+                CommandParameter.newType("player", CommandParamType.SELECTION, new IPlayersNode())
         });
         this.enableParamTree();
     }

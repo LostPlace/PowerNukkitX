@@ -24,7 +24,7 @@ public class TellCommand extends VanillaCommand {
         this.setPermission("nukkit.command.tell");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newType("message", CommandParamType.MESSAGE)
         });
         this.enableParamTree();

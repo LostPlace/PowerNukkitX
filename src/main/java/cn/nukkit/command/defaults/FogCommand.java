@@ -22,15 +22,15 @@ public class FogCommand extends VanillaCommand {
         this.setPermission("nukkit.command.fog");
         this.commandParameters.clear();
         this.commandParameters.put("push", new CommandParameter[]{
-                CommandParameter.newType("victim", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("victim", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("push", new String[]{"push"}),
-                CommandParameter.newType("fogId", CommandParamType.STRING),
-                CommandParameter.newType("userProvidedId", CommandParamType.STRING)
+                CommandParameter.newType("fogId", CommandParamType.ID),
+                CommandParameter.newType("userProvidedId", CommandParamType.ID)
         });
         this.commandParameters.put("delete", new CommandParameter[]{
-                CommandParameter.newType("victim", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("victim", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("mode", new CommandEnum("delete", "pop", "remove")),
-                CommandParameter.newType("userProvidedId", CommandParamType.STRING)
+                CommandParameter.newType("userProvidedId", CommandParamType.ID)
         });
         this.enableParamTree();
     }

@@ -40,13 +40,13 @@ public class InputPermissionCommand extends VanillaCommand {
         };
 
         this.commandParameters.put("query", new CommandParameter[]{
-                CommandParameter.newType("targets", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("targets", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("query", false, new String[]{"query"}),
                 CommandParameter.newEnum("permission", false, permissions)
         });
 
         this.commandParameters.put("set", new CommandParameter[]{
-                CommandParameter.newType("targets", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("targets", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("set", false, new String[]{"set"}),
                 CommandParameter.newEnum("permission", false, permissions),
                 CommandParameter.newEnum("state", false, new String[]{"enabled", "disabled"})

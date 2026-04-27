@@ -41,7 +41,7 @@ public class WhitelistCommand extends VanillaCommand {
         });
         this.commandParameters.put("2args", new CommandParameter[]{
                 CommandParameter.newEnum("action", new CommandEnum("AllowlistPlayerAction", "add", "remove")),
-                CommandParameter.newType("player", CommandParamType.TARGET, new StringNode())
+                CommandParameter.newType("player", CommandParamType.SELECTION, new StringNode())
         });
         this.enableParamTree();
     }

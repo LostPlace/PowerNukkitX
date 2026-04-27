@@ -80,12 +80,12 @@ public class DebugCommand extends TestCommand implements CoreCommand {
         this.commandParameters.put("structure", new CommandParameter[]{
                 CommandParameter.newEnum("structure", new String[]{"structure"}),
                 CommandParameter.newEnum("type", new String[]{"placejava", "place", "registry"}),
-                CommandParameter.newType("file", CommandParamType.STRING)
+                CommandParameter.newType("file", CommandParamType.ID)
         });
         this.commandParameters.put("reload", new CommandParameter[]{
                 CommandParameter.newEnum("reload", new String[]{"reload"}),
                 CommandParameter.newEnum("reloadType", true, new String[]{"function", "plugin"}),
-                CommandParameter.newType("plugin", true, CommandParamType.STRING)
+                CommandParameter.newType("plugin", true, CommandParamType.ID)
         });
         this.commandParameters.put("ddui", new CommandParameter[]{
                 CommandParameter.newEnum("ddui", new String[]{"ddui"})

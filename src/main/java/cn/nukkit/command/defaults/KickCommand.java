@@ -24,7 +24,7 @@ public class KickCommand extends VanillaCommand {
         this.setPermission("nukkit.command.kick");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newType("reason", true, CommandParamType.MESSAGE)
         });
         this.enableParamTree();

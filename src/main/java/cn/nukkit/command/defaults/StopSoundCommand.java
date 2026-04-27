@@ -23,8 +23,8 @@ public class StopSoundCommand extends VanillaCommand {
         this.setPermission("nukkit.command.stopsound");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("player", false, CommandParamType.TARGET, new PlayersNode()),
-                CommandParameter.newType("sound", true, CommandParamType.STRING)
+                CommandParameter.newType("player", false, CommandParamType.SELECTION, new PlayersNode()),
+                CommandParameter.newType("sound", true, CommandParamType.ID)
         });
         this.enableParamTree();
     }

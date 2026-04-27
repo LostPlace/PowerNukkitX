@@ -65,9 +65,9 @@ public class CommandEnum {
             .stream()
             .toList());
 
-    public static final CommandEnum FUNCTION_FILE = new CommandEnum("filepath", () -> Server.getInstance().getFunctionManager().getFunctions().keySet());
+    public static final CommandEnum FUNCTION_FILE = new CommandEnum("filepath", () -> Server.getInstance().getFunctionManager() != null ? Server.getInstance().getFunctionManager().getFunctions().keySet() : Collections.emptySet());
 
-    public static final CommandEnum SCOREBOARD_OBJECTIVES = new CommandEnum("ScoreboardObjectives", () -> Server.getInstance().getScoreboardManager().getScoreboards().keySet());
+    public static final CommandEnum SCOREBOARD_OBJECTIVES = new CommandEnum("ScoreboardObjectives", () -> Server.getInstance().getScoreboardManager() != null ? Server.getInstance().getScoreboardManager().getScoreboards().keySet() : Collections.emptySet());
 
     public static final CommandEnum CAMERA_PRESETS = new CommandEnum("preset", () -> DefaultCameraPresets.getAll().stream().map(CameraPreset::getName).toList());
 

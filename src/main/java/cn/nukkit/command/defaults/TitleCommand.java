@@ -24,20 +24,20 @@ public class TitleCommand extends VanillaCommand {
 
         this.commandParameters.clear();
         this.commandParameters.put("clear", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("clear", new CommandEnum("TitleClear", "clear"))
         });
         this.commandParameters.put("reset", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("reset", new CommandEnum("TitleReset", "reset"))
         });
         this.commandParameters.put("set", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("titleLocation", new CommandEnum("TitleSet", "title", "subtitle", "actionbar")),
                 CommandParameter.newType("titleText", CommandParamType.MESSAGE)
         });
         this.commandParameters.put("times", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("times", new CommandEnum("TitleTimes", "times")),
                 CommandParameter.newType("fadeIn", CommandParamType.INT),
                 CommandParameter.newType("stay", CommandParamType.INT),

@@ -59,19 +59,19 @@ public class ParamTree {
                         case INT -> new IntNode();
                         case WILDCARD_INT -> new WildcardIntNode();
                         case FLOAT -> new FloatNode();
-                        case VALUE -> new DoubleNode();
-                        case POSITION -> new FloatPositionNode();
-                        case BLOCK_POSITION -> new IntPositionNode();
-                        case TARGET -> new EntitiesNode();
-                        case WILDCARD_TARGET -> new WildcardTargetStringNode();
-                        case STRING, TEXT, FILE_PATH -> new StringNode();
+                        case VAL -> new DoubleNode();
+                        case POSITION_FLOAT -> new FloatPositionNode();
+                        case POSITION -> new IntPositionNode();
+                        case SELECTION -> new EntitiesNode();
+                        case WILDCARD_SELECTION -> new WildcardTargetStringNode();
+                        case ID, RAW_TEXT, FILE_PATH -> new StringNode();
                         case COMMAND -> new CommandNode();
                         case OPERATOR -> new OperatorStringNode();
                         case COMPARE_OPERATOR -> new CompareOperatorStringNode();
                         case MESSAGE -> new MessageStringNode();
-                        case JSON -> new RemainStringNode();
+                        case JSON_OBJECT -> new RemainStringNode();
                        // case JSON -> new RawTextNode();
-                        case BLOCK_STATES -> new BlockStateNode();
+                        case BLOCK_STATE -> new BlockStateNode();
                         default -> new VoidNode();
                     };
                 } else {

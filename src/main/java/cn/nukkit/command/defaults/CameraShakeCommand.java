@@ -25,14 +25,14 @@ public class CameraShakeCommand extends VanillaCommand {
         this.commandParameters.clear();
         this.commandParameters.put("add", new CommandParameter[]{
                 CommandParameter.newEnum("add", false, new String[]{"add"}),
-                CommandParameter.newType("player", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newType("intensity", false, CommandParamType.FLOAT),
                 CommandParameter.newType("second", false, CommandParamType.FLOAT),
                 CommandParameter.newEnum("shakeType", false, new String[]{"positional", "rotational"})
         });
         this.commandParameters.put("stop", new CommandParameter[]{
                 CommandParameter.newEnum("stop", false, new String[]{"stop"}),
-                CommandParameter.newType("player", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", false, CommandParamType.SELECTION, new PlayersNode()),
         });
         this.enableParamTree();
     }

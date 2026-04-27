@@ -24,11 +24,11 @@ public class XpCommand extends VanillaCommand {
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
                 CommandParameter.newType("amount", CommandParamType.INT),
-                CommandParameter.newType("player", true, CommandParamType.TARGET, new PlayersNode())
+                CommandParameter.newType("player", true, CommandParamType.SELECTION, new PlayersNode())
         });
         this.commandParameters.put("level", new CommandParameter[]{
-                CommandParameter.newType("level", CommandParamType.STRING, new XpLevelNode()),
-                CommandParameter.newType("player", true, CommandParamType.TARGET, new PlayersNode())
+                CommandParameter.newType("level", CommandParamType.ID, new XpLevelNode()),
+                CommandParameter.newType("player", true, CommandParamType.SELECTION, new PlayersNode())
         });
         this.enableParamTree();
     }

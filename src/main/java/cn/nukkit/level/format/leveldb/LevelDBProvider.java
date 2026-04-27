@@ -91,7 +91,7 @@ public class LevelDBProvider implements LevelProvider {
             try {
                 return new LevelDBStorage(level.getDimensionCount(), p, new Options().createIfMissing(true).compressionType(CompressionType.ZLIB_RAW).blockSize(64 * 1024));
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new UncheckedIOException("Failed to create LevelDBStorage instance", e);
             }
         });
         this.path = path;
@@ -149,7 +149,7 @@ public class LevelDBProvider implements LevelProvider {
             output.write(levelDatMagic);//magic number
             NbtUtils.createWriterLE(output).writeTag(createWorldDataNBT(levelDat));
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Failed to write level dat: ", e);
         }
     }
 
@@ -159,7 +159,7 @@ public class LevelDBProvider implements LevelProvider {
             try {
                 chunk = storage.readChunk(chunkX, chunkZ, this);
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new UncheckedIOException("Failed to load chunk", e);
             }
         }
         if (chunk == null) {
@@ -167,7 +167,7 @@ public class LevelDBProvider implements LevelProvider {
                 chunk = getOrPutChunk(index, this.getEmptyChunk(chunkX, chunkZ));
             }
         } else {
-            if (Server.getInstance().getSettings().chunkSettings().convertBDSChunks() && chunk.isPopulated()) {
+            if (Server.getInstance() != null && Server.getInstance().getSettings().chunkSettings().convertBDSChunks() && chunk.isPopulated()) {
                 NbtMap extra = chunk.getExtraData();
                 if (extra == null || extra.isEmpty()) {
                     chunk = ChunkConversion.convert(chunk);

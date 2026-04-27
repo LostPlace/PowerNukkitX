@@ -22,7 +22,7 @@ public class HudCommand extends VanillaCommand {
         this.setPermission("nukkit.command.hud");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("player", false, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", false, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newEnum("visible", false, new String[]{"hide", "reset"}),
                 CommandParameter.newEnum("hud_element", false, new String[]{"armor", "air_bubbles_bar", "crosshair", "food_bar", "health", "hotbar", "paper_doll", "tool_tips", "progress_bar", "touch_controls", "vehicle_health"})
         });

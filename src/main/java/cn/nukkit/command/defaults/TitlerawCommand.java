@@ -21,20 +21,20 @@ public class TitlerawCommand extends VanillaCommand {
         this.setPermission("nukkit.command.titleraw");
         this.commandParameters.clear();
         this.commandParameters.put("clear", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET),
+                CommandParameter.newType("player", CommandParamType.SELECTION),
                 CommandParameter.newEnum("clear", new CommandEnum("TitleClear", "clear"))
         });
         this.commandParameters.put("reset", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET),
+                CommandParameter.newType("player", CommandParamType.SELECTION),
                 CommandParameter.newEnum("reset", new CommandEnum("TitleReset", "reset"))
         });
         this.commandParameters.put("set", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET),
+                CommandParameter.newType("player", CommandParamType.SELECTION),
                 CommandParameter.newEnum("titleLocation", new CommandEnum("TitleSet", "title", "subtitle", "actionbar")),
-                CommandParameter.newType("titleJson", CommandParamType.JSON)
+                CommandParameter.newType("titleJson", CommandParamType.JSON_OBJECT)
         });
         this.commandParameters.put("times", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET),
+                CommandParameter.newType("player", CommandParamType.SELECTION),
                 CommandParameter.newEnum("times", new CommandEnum("TitleTimes", "times")),
                 CommandParameter.newType("fadeIn", CommandParamType.INT),
                 CommandParameter.newType("stay", CommandParamType.INT),

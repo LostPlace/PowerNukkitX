@@ -19,12 +19,12 @@ public class PlayAnimationCommand extends VanillaCommand {
         this.setPermission("nukkit.command.playanimation");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("entity", CommandParamType.TARGET),
-                CommandParameter.newType("animation", CommandParamType.STRING),
-                CommandParameter.newType("next_state", true, CommandParamType.STRING),
+                CommandParameter.newType("entity", CommandParamType.SELECTION),
+                CommandParameter.newType("animation", CommandParamType.ID),
+                CommandParameter.newType("next_state", true, CommandParamType.ID),
                 CommandParameter.newType("blend_out_time", true, CommandParamType.FLOAT),
-                CommandParameter.newType("stop_expression", true, CommandParamType.STRING),
-                CommandParameter.newType("controller", true, CommandParamType.STRING),
+                CommandParameter.newType("stop_expression", true, CommandParamType.ID),
+                CommandParameter.newType("controller", true, CommandParamType.ID),
         });
         this.enableParamTree();
     }

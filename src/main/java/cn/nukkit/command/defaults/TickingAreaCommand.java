@@ -28,14 +28,14 @@ public class TickingAreaCommand extends VanillaCommand {
                 CommandParameter.newEnum("add", new String[]{"add"}),
                 CommandParameter.newType("from", CommandParamType.POSITION),
                 CommandParameter.newType("to", CommandParamType.POSITION),
-                CommandParameter.newType("name", true, CommandParamType.STRING)
+                CommandParameter.newType("name", true, CommandParamType.ID)
         });
         this.commandParameters.put("add-circle", new CommandParameter[]{
                 CommandParameter.newEnum("add", new String[]{"add"}),
                 CommandParameter.newEnum("circle", new String[]{"circle"}),
                 CommandParameter.newType("center", CommandParamType.POSITION),
                 CommandParameter.newType("radius", CommandParamType.INT),
-                CommandParameter.newType("name", true, CommandParamType.STRING)
+                CommandParameter.newType("name", true, CommandParamType.ID)
         });
         this.commandParameters.put("remove-pos", new CommandParameter[]{
                 CommandParameter.newEnum("remove", new String[]{"remove"}),
@@ -43,7 +43,7 @@ public class TickingAreaCommand extends VanillaCommand {
         });
         this.commandParameters.put("remove-name", new CommandParameter[]{
                 CommandParameter.newEnum("remove", new String[]{"remove"}),
-                CommandParameter.newType("name", CommandParamType.STRING)
+                CommandParameter.newType("name", CommandParamType.ID)
         });
         this.commandParameters.put("remove-all", new CommandParameter[]{
                 CommandParameter.newEnum("remove-all", new String[]{"remove-all"})

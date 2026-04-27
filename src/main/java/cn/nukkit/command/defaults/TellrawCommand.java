@@ -24,8 +24,8 @@ public class TellrawCommand extends VanillaCommand {
         this.setPermission("nukkit.command.tellraw");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newType("player", CommandParamType.TARGET, new PlayersNode()),
-                CommandParameter.newType("rawtext", CommandParamType.TEXT)
+                CommandParameter.newType("player", CommandParamType.SELECTION, new PlayersNode()),
+                CommandParameter.newType("rawtext", CommandParamType.RAW_TEXT)
         });
         this.enableParamTree();
     }

@@ -26,24 +26,24 @@ public class ReplaceItemCommand extends VanillaCommand {
         this.commandParameters.clear();
         this.commandParameters.put("block", new CommandParameter[]{
                 CommandParameter.newEnum("block", false, new String[]{"block"}),
-                CommandParameter.newType("position", CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("position", CommandParamType.POSITION),
                 CommandParameter.newEnum("slot.container", false, new String[]{"slot.container"}),
                 CommandParameter.newType("slotId", CommandParamType.INT),
                 CommandParameter.newEnum("itemName", CommandEnum.ENUM_ITEM),
                 CommandParameter.newType("amount", true, CommandParamType.INT),
                 CommandParameter.newType("data", true, CommandParamType.INT),
-                CommandParameter.newType("components", true, CommandParamType.JSON),
+                CommandParameter.newType("components", true, CommandParamType.JSON_OBJECT),
         });
         this.commandParameters.put("block-oldItemHandling", new CommandParameter[]{
                 CommandParameter.newEnum("block", false, new String[]{"block"}),
-                CommandParameter.newType("position", CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("position", CommandParamType.POSITION),
                 CommandParameter.newEnum("slot.container", false, new String[]{"slot.container"}),
                 CommandParameter.newType("slotId", CommandParamType.INT),
                 CommandParameter.newEnum("oldItemHandling", false, new String[]{"destroy", "keep"}),
                 CommandParameter.newEnum("itemName", CommandEnum.ENUM_ITEM),
                 CommandParameter.newType("amount", true, CommandParamType.INT),
                 CommandParameter.newType("data", true, CommandParamType.INT),
-                CommandParameter.newType("components", true, CommandParamType.JSON),
+                CommandParameter.newType("components", true, CommandParamType.JSON_OBJECT),
         });
         List<String> slotTypes = List.of(
                 "slot.weapon.mainhand",
@@ -61,24 +61,24 @@ public class ReplaceItemCommand extends VanillaCommand {
         );
         this.commandParameters.put("entity", new CommandParameter[]{
                 CommandParameter.newEnum("entity", false, new String[]{"entity"}),
-                CommandParameter.newType("target", CommandParamType.TARGET),
+                CommandParameter.newType("target", CommandParamType.SELECTION),
                 CommandParameter.newEnum("slotType", false, slotTypes.toArray(new String[0])),
                 CommandParameter.newType("slotId", CommandParamType.INT),
                 CommandParameter.newEnum("itemName", CommandEnum.ENUM_ITEM),
                 CommandParameter.newType("amount", true, CommandParamType.INT),
                 CommandParameter.newType("data", true, CommandParamType.INT),
-                CommandParameter.newType("components", true, CommandParamType.JSON),
+                CommandParameter.newType("components", true, CommandParamType.JSON_OBJECT),
         });
         this.commandParameters.put("entity-oldItemHandling", new CommandParameter[]{
                 CommandParameter.newEnum("entity", false, new String[]{"entity"}),
-                CommandParameter.newType("target", CommandParamType.TARGET),
+                CommandParameter.newType("target", CommandParamType.SELECTION),
                 CommandParameter.newEnum("slotType", false, slotTypes.toArray(new String[0])),
                 CommandParameter.newType("slotId", CommandParamType.INT),
                 CommandParameter.newEnum("oldItemHandling", false, new String[]{"destroy", "keep"}),
                 CommandParameter.newEnum("itemName", CommandEnum.ENUM_ITEM),
                 CommandParameter.newType("amount", true, CommandParamType.INT),
                 CommandParameter.newType("data", true, CommandParamType.INT),
-                CommandParameter.newType("components", true, CommandParamType.JSON),
+                CommandParameter.newType("components", true, CommandParamType.JSON_OBJECT),
         });
         this.enableParamTree();
     }

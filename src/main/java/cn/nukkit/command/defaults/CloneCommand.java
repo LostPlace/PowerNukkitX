@@ -26,15 +26,15 @@ public class CloneCommand extends VanillaCommand {
         this.setPermission("nukkit.command.clone");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("begin", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("end", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("destination", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("begin", false, CommandParamType.POSITION),
+                CommandParameter.newType("end", false, CommandParamType.POSITION),
+                CommandParameter.newType("destination", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("maskMode", true, new String[]{"masked", "replace"}),
                 CommandParameter.newEnum("cloneMode", true, new String[]{"force", "move", "normal"})});
         this.addCommandParameters("filtered", new CommandParameter[]{
-                CommandParameter.newType("begin", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("end", false, CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("destination", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("begin", false, CommandParamType.POSITION),
+                CommandParameter.newType("end", false, CommandParamType.POSITION),
+                CommandParameter.newType("destination", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("maskMode", false, new String[]{"filtered"}),
                 CommandParameter.newEnum("cloneMode", false, new String[]{"force", "move", "normal"}),
                 CommandParameter.newType("tileId", false, CommandParamType.INT),

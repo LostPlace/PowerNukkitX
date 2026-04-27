@@ -21,8 +21,8 @@ public class BanCommand extends VanillaCommand {
         this.commandParameters.clear();
         this.commandParameters.put("default",
                 new CommandParameter[]{
-                        CommandParameter.newType("player", CommandParamType.STRING),
-                        CommandParameter.newType("reason", true, CommandParamType.STRING)
+                        CommandParameter.newType("player", CommandParamType.ID),
+                        CommandParameter.newType("reason", true, CommandParamType.ID)
                 });
         this.enableParamTree();
     }

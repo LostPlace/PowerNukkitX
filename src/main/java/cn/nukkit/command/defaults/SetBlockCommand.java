@@ -24,13 +24,13 @@ public class SetBlockCommand extends VanillaCommand {
         this.setPermission("nukkit.command.setblock");
         this.commandParameters.clear();
         this.addCommandParameters("setblock-with-states", new CommandParameter[]{
-                CommandParameter.newType("position", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("position", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
-                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATES),
+                CommandParameter.newType("blockStates", false, CommandParamType.BLOCK_STATE),
                 CommandParameter.newEnum("oldBlockHandling", true, new String[]{"destroy", "keep", "replace"}),
         });
         this.addCommandParameters("setblock-no-states", new CommandParameter[]{
-                CommandParameter.newType("position", false, CommandParamType.BLOCK_POSITION),
+                CommandParameter.newType("position", false, CommandParamType.POSITION),
                 CommandParameter.newEnum("tileName", false, CommandEnum.ENUM_BLOCK),
                 CommandParameter.newEnum("oldBlockHandling", true, new String[]{"destroy", "keep", "replace"}),
         });

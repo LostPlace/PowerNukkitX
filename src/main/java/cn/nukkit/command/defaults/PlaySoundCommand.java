@@ -28,7 +28,7 @@ public class PlaySoundCommand extends VanillaCommand {
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
                 CommandParameter.newEnum("sound", false, new CommandEnum("sound", Arrays.stream(Sound.values()).map(Sound::getSound).toList(), true)),
-                CommandParameter.newType("player", true, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", true, CommandParamType.SELECTION, new PlayersNode()),
                 CommandParameter.newType("position", true, CommandParamType.POSITION),
                 CommandParameter.newType("volume", true, CommandParamType.FLOAT),
                 CommandParameter.newType("pitch", true, CommandParamType.FLOAT),

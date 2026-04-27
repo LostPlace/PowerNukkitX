@@ -102,7 +102,7 @@ public abstract class Command {
         this.usageMessage = usageMessage == null ? "/" + name : usageMessage;
         this.aliases = aliases;
         this.activeAliases = aliases;
-        this.commandParameters.put("default", new CommandParameter[]{CommandParameter.newType("args", true, CommandParamType.TEXT)});
+        this.commandParameters.put("default", new CommandParameter[]{CommandParameter.newType("args", true, CommandParamType.RAW_TEXT)});
     }
 
     /**

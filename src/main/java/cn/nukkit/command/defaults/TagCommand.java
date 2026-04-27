@@ -20,17 +20,17 @@ public class TagCommand extends VanillaCommand {
         this.setPermission("nukkit.command.tag");
         this.commandParameters.clear();
         this.commandParameters.put("add", new CommandParameter[]{
-                CommandParameter.newType("targets", CommandParamType.TARGET),
+                CommandParameter.newType("targets", CommandParamType.SELECTION),
                 CommandParameter.newEnum("add", new String[]{"add"}),
-                CommandParameter.newType("name", CommandParamType.STRING)
+                CommandParameter.newType("name", CommandParamType.ID)
         });
         this.commandParameters.put("remove", new CommandParameter[]{
-                CommandParameter.newType("targets", CommandParamType.TARGET),
+                CommandParameter.newType("targets", CommandParamType.SELECTION),
                 CommandParameter.newEnum("remove", new String[]{"remove"}),
-                CommandParameter.newType("name", CommandParamType.STRING)}
+                CommandParameter.newType("name", CommandParamType.ID)}
         );
         this.commandParameters.put("list", new CommandParameter[]{
-                CommandParameter.newType("targets", CommandParamType.TARGET),
+                CommandParameter.newType("targets", CommandParamType.SELECTION),
                 CommandParameter.newEnum("list", new String[]{"list"}),
         });
         this.enableParamTree();

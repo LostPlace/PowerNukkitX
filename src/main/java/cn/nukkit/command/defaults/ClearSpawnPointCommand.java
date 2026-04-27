@@ -22,7 +22,7 @@ public class ClearSpawnPointCommand extends VanillaCommand {
         this.setPermission("nukkit.command.clearspawnpoint");
         this.getCommandParameters().clear();
         this.addCommandParameters("default", new CommandParameter[]{
-                CommandParameter.newType("player", true, CommandParamType.TARGET, new PlayersNode()),
+                CommandParameter.newType("player", true, CommandParamType.SELECTION, new PlayersNode()),
         });
         this.enableParamTree();
     }

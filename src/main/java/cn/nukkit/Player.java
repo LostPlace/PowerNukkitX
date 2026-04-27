@@ -92,10 +92,6 @@ import cn.nukkit.metadata.MetadataValue;
 import cn.nukkit.network.connection.BedrockDisconnectReasons;
 import cn.nukkit.network.process.auth.ClientChainData;
 import cn.nukkit.network.process.pack.InternalPackManager;
-import cn.nukkit.network.protocol.types.transfer.TransferPlayerIpPortOptions;
-import cn.nukkit.network.protocol.types.transfer.TransferPlayerNetherNetOptions;
-import cn.nukkit.network.protocol.types.transfer.TransferPlayerOptions;
-import cn.nukkit.network.protocol.types.transfer.TransferPlayerWaterdogOptions;
 import cn.nukkit.permission.PermissibleBase;
 import cn.nukkit.permission.Permission;
 import cn.nukkit.permission.PermissionAttachment;
@@ -4919,35 +4915,6 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
         pk.setServerAddress(hostName);
         pk.setServerPort(port);
         this.sendPacket(pk);
-    }
-
-    /**
-     * Teleport the player to another server
-     *
-     * @param options TransferPlayerOptions
-     */
-    public void transfer(TransferPlayerOptions options) {
-        TransferPacket packet = new TransferPacket();
-
-        Objects.requireNonNull(options, "TransferPlayerOptions cannot be null");
-
-        switch (options) {
-            case TransferPlayerIpPortOptions ipOptions -> {
-                packet.setServerAddress(ipOptions.getHostname());
-                packet.setServerPort(ipOptions.getPort());
-            }
-            case TransferPlayerNetherNetOptions netherNetOptions -> {
-                packet.setServerAddress(netherNetOptions.getNetherNetId());
-                packet.setServerPort(0);
-            }
-            case TransferPlayerWaterdogOptions waterdogOptions -> {
-                packet.setServerAddress(waterdogOptions.getServerName());
-                packet.setServerPort(0);
-            }
-            default -> throw new IllegalArgumentException("Unknown TransferPlayerOptions type");
-        }
-
-        this.sendPacket(packet);
     }
 
     /**

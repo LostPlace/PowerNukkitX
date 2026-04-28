@@ -6,7 +6,6 @@ import cn.nukkit.block.Block;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.ExecutorCommandSender;
 import cn.nukkit.command.data.CommandEnum;
-import cn.nukkit.command.data.CommandParamOption;
 import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.command.data.GenericParameter;
 import cn.nukkit.command.tree.ParamList;
@@ -20,6 +19,7 @@ import cn.nukkit.scoreboard.scorer.EntityScorer;
 import cn.nukkit.scoreboard.scorer.IScorer;
 import cn.nukkit.scoreboard.scorer.PlayerScorer;
 import cn.nukkit.utils.StringUtils;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandParamOption;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamType;
 
 import java.util.*;

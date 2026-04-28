@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParam;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandParamOption;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamType;
 
 import java.lang.reflect.Field;
@@ -340,9 +341,9 @@ public class CommandParameter {
         }
         data.setPostfix(this.postFix);
         if (this.paramOptions != null) {
-            final List<org.cloudburstmc.protocol.bedrock.data.command.CommandParamOption> list = new ObjectArrayList<>();
+            final List<CommandParamOption> list = new ObjectArrayList<>();
             for (CommandParamOption paramOption : this.paramOptions) {
-                list.add(org.cloudburstmc.protocol.bedrock.data.command.CommandParamOption.valueOf(paramOption.name()));
+                list.add(CommandParamOption.valueOf(paramOption.name()));
             }
             data.getOptions().addAll(list);
         }

@@ -2,6 +2,7 @@ package cn.nukkit.command.data;
 
 import cn.nukkit.command.tree.node.ChainedCommandNode;
 import cn.nukkit.command.tree.node.ItemNode;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandParamOption;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamType;
 
 /**

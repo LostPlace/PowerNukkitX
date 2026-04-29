@@ -21,7 +21,7 @@ public class StonecutterRecipe extends CraftingRecipe {
     }
 
     public StonecutterRecipe(String recipeId, UUID uuid, int netId, int priority, Item result, Item ingredient) {
-        this(recipeId, uuid, netId, priority, result, ingredient, null);
+        this(recipeId, uuid, netId, priority, result, ingredient, RecipeUnlockingRequirement.INVALID);
     }
 
     public StonecutterRecipe(String recipeId, UUID uuid, int netId, int priority, Item result, Item ingredient, RecipeUnlockingRequirement recipeUnlockingRequirement) {

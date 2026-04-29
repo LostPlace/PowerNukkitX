@@ -28,7 +28,7 @@ public class CartographyRecipe extends ShapelessRecipe {
     }
 
     public CartographyRecipe(String recipeId, UUID uuid, int netId, int priority, Item result, List<ItemDescriptor> ingredients) {
-        this(recipeId, uuid, netId, priority, result, ingredients, null);
+        this(recipeId, uuid, netId, priority, result, ingredients, RecipeUnlockingRequirement.INVALID);
     }
 
     public CartographyRecipe(String recipeId, UUID uuid, int netId, int priority, Item result, List<ItemDescriptor> ingredients, RecipeUnlockingRequirement recipeUnlockingRequirement) {

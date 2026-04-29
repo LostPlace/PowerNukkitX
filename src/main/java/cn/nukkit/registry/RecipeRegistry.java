@@ -479,7 +479,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         for (Recipe netIdRecipe : this.getNetworkIdRecipeMap().values()) {
             switch (netIdRecipe) {
                 case ShapelessRecipe recipe -> pk.getCraftingEntries().add(recipe.toNetwork());
-                case StonecutterRecipe recipe ->  pk.getCraftingEntries().add(recipe.toNetwork());
+                case StonecutterRecipe recipe -> pk.getCraftingEntries().add(recipe.toNetwork());
                 case ShapedRecipe recipe -> pk.getCraftingEntries().add(recipe.toNetwork());
                 case MultiRecipe recipe -> pk.getCraftingEntries().add(recipe.toNetwork());
                 case SmithingTransformRecipe recipe -> pk.getCraftingEntries().add(recipe.toNetwork());
@@ -648,10 +648,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                                 netId,
                                 priority,
                                 primaryResult.toItem(),
-                                ingredients.getFirst().toItem(),
-                                new RecipeUnlockingRequirement(
-                                        RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED
-                                )
+                                ingredients.getFirst().toItem()
                         ));
                     }
                     case "cartography_table" -> {
@@ -680,10 +677,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                                 netId,
                                 priority,
                                 primaryResult.toItem(),
-                                ingredients,
-                                new RecipeUnlockingRequirement(
-                                        RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED
-                                )
+                                ingredients
                         ));
                     }
 
@@ -742,9 +736,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                                     ingredients,
                                     extraResults,
                                     false,
-                                    new RecipeUnlockingRequirement(
-                                            RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED
-                                    )
+                                    RecipeUnlockingRequirement.INVALID
                             ));
                         } else {    // is shapeless recipe
 
@@ -764,9 +756,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                                         priority,
                                         primaryResult.toItem(),
                                         ingredients,
-                                        new RecipeUnlockingRequirement(
-                                                RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED
-                                        )
+                                        RecipeUnlockingRequirement.INVALID
                                 ));
                             } else {
                                 this.register(new ShapelessRecipe(
@@ -776,9 +766,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                                         priority,
                                         primaryResult.toItem(),
                                         ingredients,
-                                        new RecipeUnlockingRequirement(
-                                                RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED
-                                        )
+                                        RecipeUnlockingRequirement.INVALID
                                 ));
                             }
                         }
@@ -965,7 +953,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
 
         final int netId = (int) ((double) recipeObject.get("netId"));
 
-        RecipeUnlockingRequirement recipeUnlockingRequirement = new RecipeUnlockingRequirement(RecipeUnlockingRequirement.UnlockingContext.ALWAYS_UNLOCKED);
+        RecipeUnlockingRequirement recipeUnlockingRequirement = RecipeUnlockingRequirement.INVALID;
 
         return switch (craftingBlock) {
             case "crafting_table", "deprecated" ->

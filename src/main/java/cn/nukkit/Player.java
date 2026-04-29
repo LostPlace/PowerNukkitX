@@ -17,9 +17,9 @@ import cn.nukkit.blockentity.BlockEntitySign;
 import cn.nukkit.blockentity.BlockEntitySpawnable;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
-import cn.nukkit.command.data.NukkitCommandData;
 import cn.nukkit.command.data.CommandDataVersions;
 import cn.nukkit.command.data.CommandOverload;
+import cn.nukkit.command.data.NukkitCommandData;
 import cn.nukkit.command.utils.RawText;
 import cn.nukkit.dialog.window.FormWindowDialog;
 import cn.nukkit.entity.Attribute;
@@ -4759,8 +4759,8 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
      */
     @UnintendedClientBehaviour
     public void forceClientCloseInventory() {
-        setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) | 0x2);
-        getLevel().getScheduler().scheduleDelayedTask(() -> setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) & 0x1), 2);
+        setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) | (byte) 0x2);
+        getLevel().getScheduler().scheduleDelayedTask(() -> setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) & (byte) 0x1), 2);
     }
 
     /**

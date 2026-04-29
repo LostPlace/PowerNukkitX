@@ -160,15 +160,18 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Rec
 
         NbtMap d = ItemHelper.write(item, index);
 
+        final List<NbtMap> items = new ObjectArrayList<>(this.namedTag.getList("Items", NbtType.COMPOUND));
+
         if (item.getId() == BlockID.AIR || item.getCount() <= 0) {
             if (i >= 0) {
-                this.namedTag.getList("Items", NbtType.COMPOUND).remove(i);
+                items.remove(i);
             }
         } else if (i < 0) {
-            (this.namedTag.getList("Items", NbtType.COMPOUND)).add(d);
+            items.add(d);
         } else {
-            (this.namedTag.getList("Items", NbtType.COMPOUND)).add(i, d);
+            items.add(i, d);
         }
+        this.namedTag = this.namedTag.toBuilder().putList("Items", NbtType.COMPOUND, items).build();
     }
 
     @Override

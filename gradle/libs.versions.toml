@@ -71,15 +71,15 @@ jline-reader         = { module = "org.jline:jline-reader",                     
 jline-terminal       = { module = "org.jline:jline-terminal",                       version.ref = "org-jline-jline-terminal"                        }
 jline-terminaljna    = { module = "org.jline:jline-terminal-jna",                   version.ref = "org-jline-jline-terminal-jna"                    }
 junit                = { module = "org.junit.jupiter:junit-jupiter",                version.ref = "org-junit-jupiter-junit-jupiter"                 }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "org-junit-platform-launcher"                    }
-lz4                  = { module = "at.yawk.lz4:lz4-java",                               version.ref = "org-lz4-lz4-java"                                }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher",  version.ref = "org-junit-platform-launcher"                    }
+lz4                  = { module = "at.yawk.lz4:lz4-java",                           version.ref = "org-lz4-lz4-java"                                }
 mockito              = { module = "org.mockito:mockito-junit-jupiter",              version.ref = "org-mockito-mockito-junit-jupiter"               }
 jmh-core             = { module = "org.openjdk.jmh:jmh-core",                       version.ref = "org-openjdk-jmh-jmh-core"                        }
 jmh-generator        = { module = "org.openjdk.jmh:jmh-generator-annprocess",       version.ref = "org-openjdk-jmh-jmh-generator-annprocess"        }
 snappy               = { module = "org.xerial.snappy:snappy-java",                  version.ref = "org-xerial-snappy-snappy-java"                   }
 rng-simple           = { module = "org.apache.commons:commons-rng-simple",          version.ref = "commons-rng"                                     }
 rng-sampling         = { module = "org.apache.commons:commons-rng-sampling",        version.ref = "commons-rng"                                     }
-bedrock-connection   = { module = "org.cloudburstmc.protocol:bedrock-connection",   version.ref = "bedrock-protocol"                                }
+bedrock-connection   = { module = "org.powernukkitx.protocol:bedrock-connection",   version.ref = "bedrock-protocol"                                }
 
 [bundles]
 terminal        = ["jline-reader",      "jline-terminal",   "jline-terminaljna",    "consoleappender"   ]

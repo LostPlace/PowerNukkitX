@@ -2,23 +2,20 @@ package cn.nukkit.level.generator.stages.normal;
 
 import cn.nukkit.block.BlockState;
 import cn.nukkit.block.BlockWater;
-import cn.nukkit.level.Level;
-import cn.nukkit.level.format.ChunkState;
 import cn.nukkit.level.format.IChunk;
 import cn.nukkit.level.generator.ChunkGenerateContext;
 import cn.nukkit.level.generator.GenerateStage;
 import cn.nukkit.level.generator.holder.NormalObjectHolder;
 import cn.nukkit.level.generator.noise.f.SimplexF;
 import cn.nukkit.math.NukkitMath;
-import cn.nukkit.network.protocol.types.biome.BiomeDefinition;
-import cn.nukkit.network.protocol.types.biome.BiomeDefinitionChunkGenData;
-import cn.nukkit.network.protocol.types.biome.BiomeDefinitionData;
-import cn.nukkit.network.protocol.types.biome.BiomeSurfaceMaterialAdjustmentData;
-import cn.nukkit.network.protocol.types.biome.BiomeSurfaceMaterialData;
 import cn.nukkit.registry.Registries;
-import cn.nukkit.utils.OptionalValue;
-import cn.nukkit.utils.random.NukkitRandom;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.extern.slf4j.Slf4j;
+import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionChunkGenData;
+import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionData;
+import org.cloudburstmc.protocol.bedrock.data.biome.BiomeSurfaceBuilderData;
+import org.cloudburstmc.protocol.bedrock.data.biome.BiomeSurfaceMaterialAdjustmentData;
+import org.cloudburstmc.protocol.bedrock.data.biome.BiomeSurfaceMaterialData;
 
 @Slf4j
 public class NormalSurfaceDataStage extends GenerateStage {
@@ -28,66 +25,65 @@ public class NormalSurfaceDataStage extends GenerateStage {
     @Override
     public void apply(ChunkGenerateContext context) {
         IChunk chunk = context.getChunk();
+
         SimplexF simplexF = ((NormalObjectHolder) chunk.getLevel().getGeneratorObjectHolder()).getSurfaceHolder().getSimplexF();
-        for(int x = 0; x < 16; x++) {
-            for(int z = 0; z < 16; z++) {
-                int y = chunk.getHeightMap(x, z);
-                BlockState topBlockState = chunk.getBlockState(x, y, z);
-                BiomeDefinition definition = Registries.BIOME.get(chunk.getBiomeId(x, y, z));
-                BiomeDefinitionData biome = definition.data;
-                OptionalValue<BiomeDefinitionChunkGenData> chunkGenDataOptional = biome.chunkGenData;
-                if(chunkGenDataOptional.isPresent()) {
-                    BiomeDefinitionChunkGenData chunkGenData = chunkGenDataOptional.get();
+        chunk.batchProcess(unsafeChunk -> {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    int y = unsafeChunk.getHeightMap(x, z);
+                    BlockState topBlockState = unsafeChunk.getBlockState(x, y, z);
+                    Pair<Short, BiomeDefinitionData> definition = Registries.BIOME.get(unsafeChunk.getBiomeId(x, y, z));
+                    BiomeDefinitionData biome = definition.second();
+                    BiomeDefinitionChunkGenData chunkGenData = biome.getChunkGenData();
+                    if (chunkGenData != null) {
+                        BiomeSurfaceBuilderData surfaceBuilderData = chunkGenData.getSurfaceBuilderData();
+                        BiomeSurfaceMaterialData surfaceMaterialData = surfaceBuilderData.getSurfaceMaterial();
+                        if (surfaceMaterialData != null) {
+                            int topBlock = surfaceMaterialData.getTopBlock().getRuntimeId();
+                            int midBlock = surfaceMaterialData.getMidBlock().getRuntimeId();
+                            int seaFloorBlock = surfaceMaterialData.getSeaFloorBlock().getRuntimeId();
 
-                    OptionalValue<BiomeSurfaceMaterialData> surfaceMaterialDataOptional = chunkGenData.surfaceMaterial;
-                    if(surfaceMaterialDataOptional.isPresent()) {
-                        BiomeSurfaceMaterialData surfaceMaterialData = surfaceMaterialDataOptional.get();
-                        int topBlock = surfaceMaterialData.topBlock;
-                        int midBlock = surfaceMaterialData.midBlock;
-                        int seaFloorBlock = surfaceMaterialData.seaFloorBlock;
+                            BiomeSurfaceMaterialAdjustmentData biomeSurfaceMaterialAdjustmentData = chunkGenData.getSurfaceMaterialAdjustment();
+                            if (biomeSurfaceMaterialAdjustmentData != null) {
+                                for (var element : biomeSurfaceMaterialAdjustmentData.getBiomeElements()) {
+                                    float random = simplexF.noise2D(((unsafeChunk.getX() << 4) + x) * 0.25f, ((unsafeChunk.getZ() << 4) + z) * 0.25f, true);
+                                    if (random < element.getNoiseUpperBound() && random > element.getNoiseLowerBound()) {
+                                        int _topBlock = element.getAdjustedMaterials().getTopBlock().getRuntimeId();
+                                        int _midBlock = element.getAdjustedMaterials().getMidBlock().getRuntimeId();
+                                        int _seaFloorBlock = element.getAdjustedMaterials().getSeaFloorBlock().getRuntimeId();
+                                        if (_topBlock != -1) topBlock = _topBlock;
+                                        if (_midBlock != -1) midBlock = _midBlock;
+                                        if (_seaFloorBlock != -1) seaFloorBlock = _seaFloorBlock;
+                                    }
 
-
-                        OptionalValue<BiomeSurfaceMaterialAdjustmentData> biomeSurfaceMaterialAdjustmentDataOptional = chunkGenData.surfaceMaterialAdjustment;
-                        if(biomeSurfaceMaterialAdjustmentDataOptional.isPresent()) {
-                            BiomeSurfaceMaterialAdjustmentData biomeSurfaceMaterialAdjustmentData = biomeSurfaceMaterialAdjustmentDataOptional.get();
-                            for(var element : biomeSurfaceMaterialAdjustmentData.biomeElements) {
-                                float random = simplexF.noise2D(((chunk.getX() << 4) + x) * 0.25f, ((chunk.getZ() << 4) + z) * 0.25f, true);
-                                if(random < element.noiseUpperBound && random > element.noiseLowerBound) {
-                                    int _topBlock = element.adjustedMaterials.topBlock;
-                                    int _midBlock = element.adjustedMaterials.midBlock;
-                                    int _seaFloorBlock = element.adjustedMaterials.seaFloorBlock;
-                                    if(_topBlock != -1) topBlock = _topBlock;
-                                    if(_midBlock != -1) midBlock = _midBlock;
-                                    if(_seaFloorBlock != -1) seaFloorBlock = _seaFloorBlock;
                                 }
-
                             }
-                        }
-                        if(topBlockState != BlockWater.PROPERTIES.getBlockState()) {
-                            chunk.setBlockState(x, y, z, Registries.BLOCKSTATE.get(topBlock));
-                            for(int i = 1; i < NukkitMath.remapFromNormalized(simplexF.noise2D(x, z, true), 1, 4); i++){
-                                chunk.setBlockState(x, y-i, z, Registries.BLOCKSTATE.get(midBlock));
-                            }
-                        } else {
-                            int depth = 0;
-                            while (topBlockState == BlockWater.PROPERTIES.getBlockState()) {
-                                topBlockState = chunk.getBlockState(x, y - (++depth), z);
-                            }
-                            if(depth > surfaceMaterialData.seaFloorDepth) {
-                                BlockState state = Registries.BLOCKSTATE.get(seaFloorBlock);
-                                chunk.setBlockState(x, (y - depth), z, state);
+                            if (topBlockState != BlockWater.PROPERTIES.getBlockState()) {
+                                unsafeChunk.setBlockState(x, y, z, Registries.BLOCKSTATE.get(topBlock), 0);
+                                for (int i = 1; i < NukkitMath.remapFromNormalized(simplexF.noise2D(x, z, true), 1, 4); i++) {
+                                    unsafeChunk.setBlockState(x, y - i, z, Registries.BLOCKSTATE.get(midBlock), 0);
+                                }
                             } else {
-                                for (int i = 0; i < 3; i++) {
-                                    chunk.setBlockState(x, (y - depth) - i, z, Registries.BLOCKSTATE.get(midBlock));
+                                int depth = 0;
+                                while (topBlockState == BlockWater.PROPERTIES.getBlockState()) {
+                                    topBlockState = unsafeChunk.getBlockState(x, y - (++depth), z);
+                                }
+                                if (depth > surfaceMaterialData.getSeaFloorDepth()) {
+                                    BlockState state = Registries.BLOCKSTATE.get(seaFloorBlock);
+                                    unsafeChunk.setBlockState(x, (y - depth), z, state, 0);
+                                } else {
+                                    for (int i = 0; i < 3; i++) {
+                                        unsafeChunk.setBlockState(x, (y - depth) - i, z, Registries.BLOCKSTATE.get(midBlock), 0);
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        log.warn("No chunkGenData for biome {}", definition.first());
                     }
-                } else {
-                    log.warn("No chunkGenData for biome {}", definition.getName());
                 }
             }
-        }
+        });
     }
 
     @Override

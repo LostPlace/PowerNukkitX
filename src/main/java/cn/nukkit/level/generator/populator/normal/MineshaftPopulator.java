@@ -1,7 +1,6 @@
 package cn.nukkit.level.generator.populator.normal;
 
 import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockStone;
 import cn.nukkit.block.BlockWater;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.biome.BiomeID;
@@ -47,13 +46,14 @@ public class MineshaftPopulator extends Populator {
                         start.postProcess(manager, random, new BoundingBox(x, z, x + 15, z + 15), cx, cz);
                     }
                 }
-                for(Block block : manager.getBlocks()) {
-                    if(!block.getChunk().isGenerated()) block.getLevel().syncGenerateChunk(block.getChunkX(), block.getChunkZ());
-                    if(block.isAir()) {
-                        if(level.getBlock(block).getId() == Block.WATER) {
+                for (Block block : manager.getBlocks()) {
+                    if (!block.getChunk().isGenerated())
+                        block.getLevel().syncGenerateChunk(block.getChunkX(), block.getChunkZ());
+                    if (block.isAir()) {
+                        if (level.getBlock(block).getId() == Block.WATER) {
                             manager.setBlockStateAt(block, BlockWater.PROPERTIES.getDefaultState());
-                        } else if(block.up().getId() == Block.WATER) {
-                            manager.setBlockStateAt(block, Registries.BLOCKSTATE.get(Registries.BIOME.get(level.getBiomeId(block.getFloorX(), block.getFloorY(), block.getFloorZ())).data.chunkGenData.get().surfaceMaterial.get().seaFloorBlock));
+                        } else if (block.up().getId() == Block.WATER) {
+                            manager.setBlockStateAt(block, Registries.BLOCKSTATE.get(Registries.BIOME.get(level.getBiomeId(block.getFloorX(), block.getFloorY(), block.getFloorZ())).second().getChunkGenData().getSurfaceBuilderData().getSurfaceMaterial().getSeaFloorBlock().getRuntimeId()));
                         }
                     }
                 }
@@ -78,7 +78,7 @@ public class MineshaftPopulator extends Populator {
             IChunk chunk = level.getChunk(chunkX, chunkZ);
             if (chunk != null) {
                 int biome = chunk.getBiomeId(7, chunk.getHeightMap(7, 7), 7);
-                MineshaftPieces.Type type = biome >= BiomeID.MESA && biome <= BiomeID.MESA_PLATEAU || biome >= BiomeID.MESA_BRYCE && biome <= BiomeID.MESA_PLATEAU_STONE ? MineshaftPieces.Type.MESA : MineshaftPieces.Type.NORMAL;
+                MineshaftPieces.Type type = isBadlandsBiome(biome) ? MineshaftPieces.Type.MESA : MineshaftPieces.Type.NORMAL;
 
                 MineshaftPieces.MineshaftRoom start = new MineshaftPieces.MineshaftRoom(0, this.random, (chunkX << 4) + 2, (chunkZ << 4) + 2, type);
                 this.pieces.add(start);
@@ -95,6 +95,11 @@ public class MineshaftPopulator extends Populator {
                     this.moveBelowSeaLevel(64, this.random, 10);
                 }
             }
+        }
+
+        private static boolean isBadlandsBiome(int biome) {
+            return biome >= BiomeID.MESA && biome <= BiomeID.MESA_PLATEAU
+                    || biome >= BiomeID.MESA_BRYCE && biome <= BiomeID.MESA_PLATEAU_MUTATED;
         }
 
         @Override //\\ MineshaftStart::getType(void) // 3

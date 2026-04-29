@@ -14,12 +14,12 @@ import cn.nukkit.block.shelf.*;
 import cn.nukkit.education.Education;
 import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
-import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.plugin.Plugin;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
 import me.sunlan.fastreflection.FastConstructor;
 import me.sunlan.fastreflection.FastMemberLoader;
+import org.cloudburstmc.nbt.NbtMap;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.lang.reflect.Field;
@@ -347,7 +347,7 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
         register0(DARK_PRISMARINE_DOUBLE_SLAB, BlockDarkPrismarineDoubleSlab.class);
         register0(DARK_PRISMARINE_SLAB, BlockDarkPrismarineSlab.class);
         register0(DARK_PRISMARINE_STAIRS, BlockDarkPrismarineStairs.class);
-        register0(DARKOAK_STANDING_SIGN, BlockDarkoakStandingSign.class);
+        register0(DARKOAK_STANDING_SIGN, BlockDarkOakStandingSign.class);
         register0(DARKOAK_WALL_SIGN, BlockDarkoakWallSign.class);
         register0(DAYLIGHT_DETECTOR, BlockDaylightDetector.class);
         register0(DAYLIGHT_DETECTOR_INVERTED, BlockDaylightDetectorInverted.class);
@@ -1223,6 +1223,8 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
         register0(CRIMSON_SHELF, BlockCrimsonShelf.class);
         register0(WARPED_SHELF, BlockWarpedShelf.class);
         register0(BAMBOO_SHELF, BlockBambooShelf.class);
+
+        register0(GOLDEN_DANDELION, BlockGoldenDandelion.class);
     }
 
     public void trim() {
@@ -1333,7 +1335,7 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
                     CUSTOM_BLOCK_DEFINITION_BY_ID.put(customBlock.getId(), customBlock.getDefinition());
                     int rid = 255 - CustomBlockDefinition.getRuntimeId(customBlock.getId());
                     Registries.ITEM_RUNTIMEID.registerCustomRuntimeItem(new ItemRuntimeIdRegistry.RuntimeEntry(customBlock.getId(), rid, false));
-                    CompoundTag nbt = def.nbt();
+                    NbtMap nbt = def.nbt();
                     if (Registries.CREATIVE.shouldBeRegisteredBlock(nbt)) {
                         ItemBlock itemBlock = new ItemBlock(customBlock.toBlock());
                         itemBlock.setNetId(null);

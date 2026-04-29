@@ -14,9 +14,11 @@ import cn.nukkit.level.Sound;
 import cn.nukkit.level.format.IChunk;
 import cn.nukkit.math.SimpleAxisAlignedBB;
 import cn.nukkit.math.Vector2;
-import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.registry.Registries;
 import cn.nukkit.tags.BiomeTags;
 import cn.nukkit.tags.BlockTags;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMapBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +36,7 @@ public class BlockEntityConduit extends BlockEntitySpawnable {
     private int validBlocks;
 
 
-    public BlockEntityConduit(IChunk chunk, CompoundTag nbt) {
+    public BlockEntityConduit(IChunk chunk, NbtMap nbt) {
         super(chunk, nbt);
     }
 
@@ -48,8 +50,8 @@ public class BlockEntityConduit extends BlockEntitySpawnable {
     public void loadNBT() {
         super.loadNBT();
         validBlocks = -1;
-        if (!namedTag.contains("Target")) {
-            namedTag.putLong("Target", -1);
+        if (!namedTag.containsKey("Target")) {
+            this.namedTag = namedTag.toBuilder().putLong("Target", -1).build();
             target = -1;
             targetEntity = null;
         } else {
@@ -63,8 +65,9 @@ public class BlockEntityConduit extends BlockEntitySpawnable {
     public void saveNBT() {
         super.saveNBT();
         Entity targetEntity = this.targetEntity;
-        namedTag.putLong("Target", targetEntity != null ? targetEntity.getId() : -1);
-        namedTag.putBoolean("Active", active);
+        this.namedTag = namedTag.toBuilder().putLong("Target", targetEntity != null ? targetEntity.getId() : -1)
+                .putBoolean("Active", active)
+                .build();
     }
 
     @Override
@@ -207,7 +210,7 @@ public class BlockEntityConduit extends BlockEntitySpawnable {
     public boolean canAffect(Entity target) {
         return target.isTouchingWater()
                 || target.level.isRaining() && target.level.canBlockSeeSky(target)
-                && !BiomeTags.containTag(target.level.getBiomeId(target.getFloorX(), target.getFloorY(), target.getFloorZ()), BiomeTags.FROZEN);
+                && !Registries.BIOME.containsTag(BiomeTags.FROZEN, target.level.getBiomeId(target.getFloorX(), target.getFloorY(), target.getFloorZ()));
     }
 
     private boolean scanWater() {
@@ -355,12 +358,12 @@ public class BlockEntityConduit extends BlockEntitySpawnable {
     }
 
     @Override
-    public CompoundTag getSpawnCompound() {
-        CompoundTag tag = super.getSpawnCompound()
+    public NbtMap getSpawnCompound() {
+        NbtMapBuilder tag = super.getSpawnCompound().toBuilder()
                 .putBoolean("isMovable", this.isMovable())
                 .putBoolean("Active", this.active);
         Entity targetEntity = this.targetEntity;
         tag.putLong("Target", targetEntity != null ? targetEntity.getId() : -1);
-        return tag;
+        return tag.build();
     }
 }

@@ -3843,7 +3843,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             if (showMessages && !ev.getDeathMessage().toString().isEmpty()) {
                 this.server.broadcast(ev.getDeathMessage(), Server.BROADCAST_CHANNEL_USERS);
             }
-            this.setDataProperty(ActorDataTypes.PLAYER_LAST_DEATH_POS, new BlockVector3(this.getFloorX(), this.getFloorY(), this.getFloorZ()));
+            this.setDataProperty(ActorDataTypes.PLAYER_LAST_DEATH_POS, new BlockVector3(this.getFloorX(), this.getFloorY(), this.getFloorZ()).toNetwork());
 
             RespawnPacket pk = new RespawnPacket();
             pk.setPosition(this.getSpawn().left().toNetwork());

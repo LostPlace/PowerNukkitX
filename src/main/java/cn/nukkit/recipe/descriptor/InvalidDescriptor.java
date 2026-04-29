@@ -40,6 +40,11 @@ public class InvalidDescriptor implements ItemDescriptor {
         );
     }
 
+    @Override
+    public boolean match(Item item) {
+        return item.equals(Item.AIR);
+    }
+
     public String toString() {
         return "InvalidDescriptor(count=" + this.getCount() + ")";
     }

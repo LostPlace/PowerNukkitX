@@ -2,6 +2,7 @@ package cn.nukkit.recipe;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.recipe.descriptor.DefaultDescriptor;
+import cn.nukkit.recipe.descriptor.InvalidDescriptor;
 import cn.nukkit.recipe.descriptor.ItemDescriptor;
 import cn.nukkit.registry.RecipeRegistry;
 import com.google.common.base.Preconditions;
@@ -147,7 +148,7 @@ public class ShapedRecipe extends CraftingRecipe {
     public ItemDescriptor getIngredient(int x, int y) {
         String shape = this.shape[y];
         var res = x < shape.length() ? this.shapedIngredients.get(shape.charAt(x)) : null;
-        return res == null ? new DefaultDescriptor(Item.AIR) : res;
+        return res == null ? InvalidDescriptor.INSTANCE : res;
     }
 
     public String[] getShape() {

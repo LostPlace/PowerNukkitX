@@ -5,6 +5,7 @@ import cn.nukkit.event.inventory.CraftItemEvent;
 import cn.nukkit.inventory.CreativeOutputInventory;
 import cn.nukkit.item.Item;
 import cn.nukkit.recipe.UserDataShapelessRecipe;
+import cn.nukkit.recipe.descriptor.InvalidDescriptor;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.tags.ItemTags;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,8 @@ public class CraftRecipeAutoProcessor implements ItemStackRequestActionProcessor
                     match = this.match(serverExpect, tagDescriptor, clientInputItem);
                 } else if (serverExpect.getDescriptor() instanceof DefaultDescriptor descriptor) {
                     match = this.match(serverExpect, descriptor, clientInputItem);
+                } else if (serverExpect.getDescriptor() instanceof InvalidDescriptor) {
+                    match = clientInputItem.equals(Item.AIR);
                 }
                 if (match) {
                     success++;

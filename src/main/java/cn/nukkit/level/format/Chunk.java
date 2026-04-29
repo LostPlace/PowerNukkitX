@@ -10,19 +10,18 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityFlyable;
 import cn.nukkit.level.DimensionData;
 import cn.nukkit.level.Level;
+import cn.nukkit.level.generator.densityfunction.DensityCommon;
 import cn.nukkit.level.biome.BiomeID;
 import cn.nukkit.level.entity.spawners.SpawnRule;
 import cn.nukkit.math.BlockVector3;
 import cn.nukkit.math.Vector3;
-import cn.nukkit.nbt.tag.CompoundTag;
-import cn.nukkit.nbt.tag.ListTag;
-import cn.nukkit.nbt.tag.NumberTag;
-import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.utils.Utils;
 import cn.nukkit.utils.collection.nb.Long2ObjectNonBlockingMap;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtType;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
@@ -55,14 +54,15 @@ public class Chunk implements IChunk {
     protected final Long2ObjectNonBlockingMap<BlockEntity> tiles;//block entity id -> block entity
     protected final Long2ObjectNonBlockingMap<BlockEntity> tileList;//block entity position hash index -> block entity
     //delay load block entity and entity
-    protected final CompoundTag extraData;
+    protected NbtMap extraData;
+    private volatile DensityCommon.ChunkCache densityChunkCache;
     protected final StampedLock blockLock;
     protected final StampedLock heightAndBiomeLock;
     protected final StampedLock lightLock;
     protected final LevelProvider provider;
     protected boolean isInit;
-    protected List<CompoundTag> blockEntityNBT;
-    protected List<CompoundTag> entityNBT;
+    protected List<NbtMap> blockEntityNBT;
+    protected List<NbtMap> entityNBT;
 
     private Chunk(
             final int chunkX,
@@ -80,7 +80,7 @@ public class Chunk implements IChunk {
         this.tileList = new Long2ObjectNonBlockingMap<>();
         this.entityNBT = new ArrayList<>();
         this.blockEntityNBT = new ArrayList<>();
-        this.extraData = new CompoundTag();
+        this.extraData = NbtMap.EMPTY;
         this.changes = new AtomicLong();
         this.blockLock = new StampedLock();
         this.heightAndBiomeLock = new StampedLock();
@@ -94,9 +94,9 @@ public class Chunk implements IChunk {
             final LevelProvider levelProvider,
             final ChunkSection[] sections,
             final short[] heightMap,
-            final List<CompoundTag> entityNBT,
-            final List<CompoundTag> blockEntityNBT,
-            final CompoundTag extraData
+            final List<NbtMap> entityNBT,
+            final List<NbtMap> blockEntityNBT,
+            final NbtMap extraData
     ) {
         this.chunkState = new AtomicReference<>(state);
         this.x = chunkX;
@@ -120,6 +120,24 @@ public class Chunk implements IChunk {
     public boolean isSectionEmpty(int fY) {
         ChunkSection section = this.getSection(fY - getDimensionData().getMinSectionY());
         return section == null || section.isEmpty();
+    }
+
+    public DensityCommon.ChunkCache getOrCreateDensityChunkCache() {
+        DensityCommon.ChunkCache cache = this.densityChunkCache;
+        if (cache == null) {
+            synchronized (this) {
+                cache = this.densityChunkCache;
+                if (cache == null) {
+                    cache = new DensityCommon.ChunkCache();
+                    this.densityChunkCache = cache;
+                }
+            }
+        }
+        return cache;
+    }
+
+    public void releaseDensityChunkCache() {
+        this.densityChunkCache = null;
     }
 
     @Override
@@ -360,7 +378,7 @@ public class Chunk implements IChunk {
             for (int z = 0; z < 16; ++z) {
                 for (int x = 0; x < 16; ++x) { // iterating over all columns in chunk
                     int level = 15;
-                    for(int y = getDimensionData().getMaxHeight(); y >= getDimensionData().getMinHeight(); y--) {
+                    for (int y = getDimensionData().getMaxHeight(); y >= getDimensionData().getMinHeight(); y--) {
                         Block block = unsafe.getBlockState(x, y, z).toBlock();
 
                         if (!block.isTransparent()) {
@@ -370,7 +388,7 @@ public class Chunk implements IChunk {
                         } else {
                             level -= block.getLightLevel();
                         }
-                        if(level <= 0) break;
+                        if (level <= 0) break;
                         unsafe.setBlockSkyLight(x, y, z, level);
                     }
                 }
@@ -424,17 +442,17 @@ public class Chunk implements IChunk {
 
     @Override
     public boolean isLightPopulated() {
-        return extraData.contains("LightPopulated") && extraData.getBoolean("LightPopulated");
+        return extraData.containsKey("LightPopulated") && extraData.getBoolean("LightPopulated");
     }
 
     @Override
     public void setLightPopulated(boolean value) {
-        extraData.putBoolean("LightPopulated", value);
+        this.extraData = extraData.toBuilder().putBoolean("LightPopulated", value).build();
     }
 
     @Override
     public void setLightPopulated() {
-        extraData.putBoolean("LightPopulated", true);
+        this.extraData = extraData.toBuilder().putBoolean("LightPopulated", true).build();
     }
 
     @Override
@@ -457,7 +475,7 @@ public class Chunk implements IChunk {
 
     @Override
     public void removeEntity(Entity entity) {
-        if(entity.getId() < 0) return;
+        if (entity.getId() < 0) return;
         if (this.entities != null) {
             synchronized (this.entities) {
                 this.entities.remove(entity.getId());
@@ -472,12 +490,11 @@ public class Chunk implements IChunk {
     public void addBlockEntity(BlockEntity blockEntity) {
         this.tiles.put(blockEntity.getId(), blockEntity);
         int index = ((blockEntity.getFloorZ() & 0x0f) << 16) | ((blockEntity.getFloorX() & 0x0f) << 12) | (ensureY(blockEntity.getFloorY()) + 64);
-        BlockEntity entity = this.tileList.get(index);
-        if (this.tileList.containsKey(index) && !entity.equals(blockEntity)) {
-            this.tiles.remove(entity.getId());
-            entity.close();
+        BlockEntity existing = this.tileList.put(index, blockEntity);
+        if (existing != null && !existing.equals(blockEntity)) {
+            this.tiles.remove(existing.getId());
+            existing.close();
         }
-        this.tileList.put(index, blockEntity);
         if (this.isInit) {
             this.setChanged();
         }
@@ -488,7 +505,7 @@ public class Chunk implements IChunk {
         if (this.tiles != null) {
             this.tiles.remove(blockEntity.getId());
             int index = ((blockEntity.getFloorZ() & 0x0f) << 16) | ((blockEntity.getFloorX() & 0x0f) << 12) | (ensureY(blockEntity.getFloorY()) + 64);
-            this.tileList.remove(index);
+            this.tileList.remove(index, blockEntity);
             if (this.isInit) {
                 this.setChanged();
             }
@@ -568,7 +585,7 @@ public class Chunk implements IChunk {
                         Entity entity = Registries.ENTITY.provideEntity(spawnRule.getEntityId(), this, Entity.getDefaultNBT(spawnPos));
                         if (entity != null) {
                             spawnedEntityCount++;
-                            entity.namedTag.putString("SpawnReason", "NATURAL");
+                            entity.namedTag = entity.namedTag.toBuilder().putString("SpawnReason", "NATURAL").build();
                             entity.despawnable = true;
                             entity.spawnToAll();
                         }
@@ -669,34 +686,34 @@ public class Chunk implements IChunk {
         if (this.getProvider() != null && !this.isInit) {
             boolean changed = false;
             if (this.entityNBT != null) {
-                for (CompoundTag nbt : entityNBT) {
-                    if (!nbt.contains("identifier")) {
+                for (NbtMap nbt : entityNBT) {
+                    if (!nbt.containsKey("identifier")) {
                         this.setChanged();
                         continue;
                     }
-                    ListTag<? extends Tag> pos = nbt.getList("Pos");
-                    if ((((NumberTag<?>) pos.get(0)).getData().intValue() >> 4) != this.getX() || ((((NumberTag<?>) pos.get(2)).getData().intValue() >> 4) != this.getZ())) {
+                    List<Double> pos = nbt.getList("Pos", NbtType.DOUBLE);
+                    if ((pos.get(0).intValue() >> 4) != this.getX() || (pos.get(2).intValue() >> 4) != this.getZ()) {
                         changed = true;
                         continue;
                     }
-                   try {
-                       Entity entity = Entity.createEntity(nbt.getString("identifier"), this, nbt);
-                       if (entity != null) {
-                           changed = true;
-                       }
-                   } catch (Exception e) {
-                       log.error("Failed to spawn blockentity", e);
-                   }
+                    try {
+                        Entity entity = Entity.createEntity(nbt.getString("identifier"), this, nbt);
+                        if (entity != null) {
+                            changed = true;
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to spawn blockentity", e);
+                    }
                 }
                 this.entityNBT = null;
             }
 
             if (this.blockEntityNBT != null) {
-                for (CompoundTag nbt : blockEntityNBT) {
+                for (NbtMap nbt : blockEntityNBT) {
                     if (nbt != null) {
-                        if (!nbt.contains("id")) {
+                        if (!nbt.containsKey("id")) {
                             changed = true;
-                            log.warn("BlockEntity tag without id");
+                            log.warn("BlockEntity tag without id: {} in chunk {};{}, blockX: {}, blockZ: {}", nbt, this.x, this.z, (this.x << 4), (this.z << 4));
                             continue;
                         }
                         if ((nbt.getInt("x") >> 4) != this.getX() || ((nbt.getInt("z") >> 4) != this.getZ())) {
@@ -731,8 +748,13 @@ public class Chunk implements IChunk {
     }
 
     @Override
-    public CompoundTag getExtraData() {
+    public NbtMap getExtraData() {
         return this.extraData;
+    }
+
+    @Override
+    public void setExtraData(NbtMap extraData) {
+        this.extraData = extraData;
     }
 
     @Override
@@ -761,10 +783,10 @@ public class Chunk implements IChunk {
 
     @Override
     public long getSectionBlockChanges(int sectionY) {
-        if(sectionY < 0 || sectionY >= getDimensionData().getChunkSectionCount()) {
+        if (sectionY < 0 || sectionY >= getDimensionData().getChunkSectionCount()) {
             return 0L;
         }
-        if(sections[sectionY] == null) return 0L;
+        if (sections[sectionY] == null) return 0L;
         return sections[sectionY].blockChanges().get();
     }
 
@@ -794,7 +816,7 @@ public class Chunk implements IChunk {
     protected ChunkSection getOrCreateSection(int sectionY) {
         int minSectionY = this.getDimensionData().getMinSectionY();
         int offsetY = sectionY - minSectionY;
-        if(this.sections[offsetY] == null) {
+        if (this.sections[offsetY] == null) {
             this.sections[offsetY] = new ChunkSection((byte) (offsetY + minSectionY));
         }
         return sections[offsetY];
@@ -870,9 +892,9 @@ public class Chunk implements IChunk {
         LevelProvider levelProvider;
         ChunkSection[] sections;
         short[] heightMap;
-        List<CompoundTag> entities;
-        List<CompoundTag> blockEntities;
-        CompoundTag extraData;
+        List<NbtMap> entities;
+        List<NbtMap> blockEntities;
+        NbtMap extraData;
 
         private Builder() {
         }
@@ -938,19 +960,19 @@ public class Chunk implements IChunk {
         }
 
         @Override
-        public Builder entities(List<CompoundTag> entities) {
+        public Builder entities(List<NbtMap> entities) {
             this.entities = entities;
             return this;
         }
 
         @Override
-        public Builder blockEntities(List<CompoundTag> blockEntities) {
+        public Builder blockEntities(List<NbtMap> blockEntities) {
             this.blockEntities = blockEntities;
             return this;
         }
 
         @Override
-        public IChunkBuilder extraData(CompoundTag extraData) {
+        public IChunkBuilder extraData(NbtMap extraData) {
             this.extraData = extraData;
             return this;
         }
@@ -962,7 +984,7 @@ public class Chunk implements IChunk {
             if (heightMap == null) heightMap = new short[256];
             if (entities == null) entities = new ArrayList<>();
             if (blockEntities == null) blockEntities = new ArrayList<>();
-            if (extraData == null) extraData = new CompoundTag();
+            if (extraData == null) extraData = NbtMap.EMPTY;
             return new Chunk(
                     state,
                     chunkX,

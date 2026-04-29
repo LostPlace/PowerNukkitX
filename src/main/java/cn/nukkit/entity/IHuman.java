@@ -200,17 +200,16 @@ public interface IHuman extends InventoryHolder {
 
     default void saveHumanEntity(Entity human) {
         //EntityHumanType
-        List<NbtMap> inventoryTag = null;
+        final List<NbtMap> inventoryTag = new ObjectArrayList<>();
         final NbtMapBuilder builder = human.namedTag.toBuilder();
 
+        builder.putList("Inventory", NbtType.COMPOUND, inventoryTag).build(); // add empty
         if (this.getInventory() != null) {
-            inventoryTag = new ObjectArrayList<>();
-            builder.putList("Inventory", NbtType.COMPOUND, inventoryTag).build();
-
             for (var entry : getInventory().getContents().entrySet()) {
                 inventoryTag.add(ItemHelper.write(entry.getValue(), entry.getKey()));
             }
 
+            builder.putList("Inventory", NbtType.COMPOUND, inventoryTag).build(); // add contents
             builder.putInt("SelectedInventorySlot", this.getInventory().getHeldItemIndex());
         }
 

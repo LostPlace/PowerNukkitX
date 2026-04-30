@@ -4293,7 +4293,7 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
             this.removeWindow(window);
         }
         final Entity currentRide = getRiding();
-        if (currentRide != null && !currentRide.dismountEntity(this)) {
+        if (currentRide != null && !currentRide.dismountEntity(this, true, false)) {
             return false;
         }
         setOpenSignFront(null);

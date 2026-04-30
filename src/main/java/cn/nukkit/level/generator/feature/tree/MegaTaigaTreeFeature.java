@@ -12,6 +12,7 @@ import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionData;
 public class MegaTaigaTreeFeature extends GriddedFeature {
 
     public static final String NAME = "minecraft:mega_taiga_surface_trees_feature";
+    public static final String ALIAS = "minecraft:scatter_taiga_plant_feature";
 
     @Override
     public ObjectGenerator getGenerator(RandomSourceProvider random) {

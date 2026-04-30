@@ -5,6 +5,7 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityPhysical;
+import cn.nukkit.entity.item.EntityBoat;
 import cn.nukkit.event.player.PlayerHackDetectedEvent;
 import cn.nukkit.event.player.PlayerJumpEvent;
 import cn.nukkit.event.player.PlayerKickEvent;
@@ -18,9 +19,11 @@ import cn.nukkit.level.Location;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.BlockVector3;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.network.process.PacketHandler;
 import cn.nukkit.network.process.PacketHandlerRegistry;
 import cn.nukkit.network.process.PlayerSessionHolder;
+import org.cloudburstmc.math.vector.Vector2f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.protocol.bedrock.data.PlayerActionType;
 import org.cloudburstmc.protocol.bedrock.data.PlayerAuthInputData;
@@ -221,20 +224,60 @@ public class PlayerAuthInputHandler implements PacketHandler<PlayerAuthInputPack
         Location clientLoc = Location.fromObject(clientPosition, player.level, yaw, pitch, headYaw);
 
         Entity vehicle = null;
-        if ((vehicle = player.getRiding()) != null && (vehicle.hasWASDControls())) {
-            if (!check(clientLoc, player)) return;
+        if ((vehicle = player.getRiding()) != null && vehicle.hasWASDControls()) {
+            syncVehiclePositionFromRiderInput(player, vehicle, packet);
             if (vehicle.onRiderInput(player, packet)) return;
         }
 
         player.offerMovementTask(clientLoc);
     }
 
-    private static boolean check(Location clientLoc, Player player) {
-        var distance = clientLoc.distanceSquared(player);
-        var updatePosition = (float) Math.sqrt(distance) > 0.1f;
-        var updateRotation = (float) Math.abs(player.getPitch() - clientLoc.pitch) > 1
-                || (float) Math.abs(player.getYaw() - clientLoc.yaw) > 1
-                || (float) Math.abs(player.getHeadYaw() - clientLoc.headYaw) > 1;
-        return updatePosition || updateRotation;
+    private static void syncVehiclePositionFromRiderInput(Player player, Entity vehicle, PlayerAuthInputPacket pk) {
+        if (vehicle == null || !vehicle.isAlive()) return;
+        if (pk.getClientPredictedVehicle() == 0) return;
+        if (pk.getClientPredictedVehicle() != vehicle.getId()) return;
+
+        Vector3 packetPosition = Vector3f.fromNetwork(pk.getPosition()).asVector3();
+        Vector3 vehiclePosition = packetPosition;
+        EntityBoat boat = vehicle instanceof EntityBoat entityBoat ? entityBoat : null;
+
+        if (boat != null) {
+            double boatY = packetPosition.y - boat.getBaseOffset();
+            vehiclePosition = new Vector3(packetPosition.x, boatY, packetPosition.z);
+        }
+
+        double vehiclePitch = vehicle.getPitch();
+        double vehicleYaw = vehicle.getYaw();
+
+        if (pk.getVehicleRotation() != null) {
+            vehiclePitch = pk.getVehicleRotation().getX() % 360;
+            vehicleYaw = pk.getVehicleRotation().getY() % 360;
+        } else {
+            vehiclePitch = pk.getPlayerRotation().getX() % 360;
+            vehicleYaw = pk.getPlayerRotation().getY() % 360;
+        }
+
+        if (vehicleYaw < 0) vehicleYaw += 360;
+        if (vehiclePitch < 0) vehiclePitch += 360;
+
+        double distanceSquared = vehiclePosition.distanceSquared(vehicle);
+
+        if (distanceSquared > 0.0001d) {
+            vehicle.setPosition(vehiclePosition);
+        }
+
+        vehicle.setRotation(vehicleYaw, vehiclePitch);
+        vehicle.setHeadYaw(vehicleYaw);
+        vehicle.updateMovement();
+
+        if (boat != null) {
+            boat.updatePassengers(false, false);
+        } else {
+            player.setPosition(packetPosition);
+        }
+
+        Vector3f rot = Vector3f.fromNetwork(pk.getPlayerRotation());
+        player.setRotation(rot.getY(), rot.getX());
+        player.setHeadYaw(rot.getZ());
     }
 }

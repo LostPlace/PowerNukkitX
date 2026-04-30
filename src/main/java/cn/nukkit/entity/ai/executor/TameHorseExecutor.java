@@ -111,7 +111,7 @@ public class TameHorseExecutor extends FlatRandomRoamExecutor {
                     return false;
                 }
                 player.sendPacket(packet);
-                horse.dismountEntity(horse.getRider());
+                horse.dismountEntity(player, true, false);
                 horse.setPersistent(true);
                 tick1++;
                 return true;

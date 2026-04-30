@@ -6,6 +6,7 @@ import cn.nukkit.level.format.LevelProvider;
 import cn.nukkit.level.util.LevelDBKeyUtil;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtUtils;
+import org.apache.logging.log4j.util.InternalApi;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
@@ -60,13 +61,21 @@ public final class LevelDBStorage {
         return builder.build();
     }
 
+    WriteBatch createBatch() {
+        return this.db.createWriteBatch();
+    }
+
     public void writeChunk(IChunk chunk) throws IOException {
-        try (WriteBatch writeBatch = this.db.createWriteBatch()) {
+        try (WriteBatch writeBatch = createBatch()) {
             LevelDBChunkSerializer.INSTANCE.serialize(writeBatch, chunk);
-            WriteOptions writeOptions = new WriteOptions();
-            writeOptions.sync(false);
-            this.db.write(writeBatch, writeOptions);
+            writeBatch(writeBatch);
         }
+    }
+
+    void writeBatch(WriteBatch writeBatch) {
+        WriteOptions writeOptions = new WriteOptions();
+        writeOptions.sync(false);
+        this.db.write(writeBatch, writeOptions);
     }
 
     public NbtMap readWorldDynamicProperties() {

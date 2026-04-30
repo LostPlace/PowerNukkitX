@@ -212,6 +212,9 @@ public class InventoryTransactionHandler implements PacketHandler<InventoryTrans
                     return;
                 }
             }
+
+            player.interruptShieldBlockingForAttack();
+
             float itemDamage = item.getAttackDamage(player);
             Enchantment[] enchantments = item.getEnchantments();
             if (item.applyEnchantments()) {

@@ -435,6 +435,7 @@ public class MineshaftPieces {
                                         .build()
                         );
                         new ChestPopulator().create(minecart.getInventory(), random);
+                        minecart.spawnToAll();
                     }
                 });
 

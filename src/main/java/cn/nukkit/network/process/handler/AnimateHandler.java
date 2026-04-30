@@ -3,7 +3,6 @@ package cn.nukkit.network.process.handler;
 import cn.nukkit.Player;
 import cn.nukkit.PlayerHandle;
 import cn.nukkit.Server;
-import cn.nukkit.entity.item.EntityBoat;
 import cn.nukkit.event.player.PlayerAnimationEvent;
 import cn.nukkit.network.process.PacketHandler;
 import cn.nukkit.network.process.PlayerSessionHolder;
@@ -39,13 +38,8 @@ public class AnimateHandler implements PacketHandler<AnimatePacket> {
         }
         animation = animationEvent.getAnimationType();
 
-        switch (animation) {
-            case ROW_RIGHT, ROW_LEFT -> {
-                if (player.riding instanceof EntityBoat boat) {
-                    boat.onPaddle(animation, 1); // TODO: Paddle time got removed from packet. Needs debugging!!
-                }
-                return;
-            }
+        if (animation == AnimatePacket.Action.SWING) {
+            player.interruptShieldBlockingForAttack();
         }
 
         final AnimatePacket pk = new AnimatePacket();

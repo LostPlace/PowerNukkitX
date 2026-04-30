@@ -61,7 +61,7 @@ public class InteractHandler implements PacketHandler<InteractPacket> {
                 if (!targetEntity.isRideable() || player.riding == null) {
                     return;
                 }
-                player.riding.dismountEntity(player);
+                player.riding.dismountEntity(player, true, true);
             }
             case InteractPacket.Action.OPEN_INVENTORY -> {
                 if (targetEntity.isRideable()) {

@@ -57,7 +57,7 @@ public class JavaPluginLoader implements PluginLoader {
         PluginDescription description = this.getPluginDescription(file);
         if (description != null) {
             log.info(this.server.getLanguage().tr("nukkit.plugin.load", description.getFullName()));
-            File dataFolder = new File(this.server.getPluginPath(), description.getName()); //ALWAYS USE PLUGIN FOLDER AS STORAGE
+            File dataFolder = new File(this.server.getPluginPath(), description.getName());
             if (dataFolder.exists() && !dataFolder.isDirectory()) {
                 throw new IllegalStateException("Projected dataFolder '" + dataFolder + "' for " + description.getName() + " exists and is not a directory");
             }

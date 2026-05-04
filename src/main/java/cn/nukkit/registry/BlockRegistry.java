@@ -10,6 +10,8 @@ import cn.nukkit.block.copper.lantern.*;
 import cn.nukkit.block.copper.lightningrod.*;
 import cn.nukkit.block.customblock.CustomBlock;
 import cn.nukkit.block.customblock.CustomBlockDefinition;
+import cn.nukkit.block.dispenser.BlockDispenser;
+import cn.nukkit.block.dispenser.BlockDropper;
 import cn.nukkit.block.shelf.*;
 import cn.nukkit.education.Education;
 import cn.nukkit.item.ItemBlock;
@@ -347,7 +349,7 @@ public final class BlockRegistry implements BlockID, IRegistry<String, Block, Cl
         register0(DARK_PRISMARINE_DOUBLE_SLAB, BlockDarkPrismarineDoubleSlab.class);
         register0(DARK_PRISMARINE_SLAB, BlockDarkPrismarineSlab.class);
         register0(DARK_PRISMARINE_STAIRS, BlockDarkPrismarineStairs.class);
-        register0(DARKOAK_STANDING_SIGN, BlockDarkoakStandingSign.class);
+        register0(DARKOAK_STANDING_SIGN, BlockDarkOakStandingSign.class);
         register0(DARKOAK_WALL_SIGN, BlockDarkoakWallSign.class);
         register0(DAYLIGHT_DETECTOR, BlockDaylightDetector.class);
         register0(DAYLIGHT_DETECTOR_INVERTED, BlockDaylightDetectorInverted.class);

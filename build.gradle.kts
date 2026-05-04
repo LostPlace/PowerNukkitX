@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "org.powernukkitx"
-version = "2.0.0-SNAPSHOT"
+version = "2.1.0-SNAPSHOT"
 description = "powernukkitx"
 java.sourceCompatibility = JavaVersion.VERSION_21
 java.targetCompatibility = JavaVersion.VERSION_21

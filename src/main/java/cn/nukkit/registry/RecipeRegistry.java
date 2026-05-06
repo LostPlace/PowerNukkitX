@@ -10,6 +10,7 @@ import cn.nukkit.recipe.descriptor.ItemDescriptorType;
 import cn.nukkit.recipe.descriptor.ItemTagDescriptor;
 import cn.nukkit.recipe.special.DecoratedPotRecipe;
 import cn.nukkit.recipe.special.SmithingArmorTrimCorrectedRecipe;
+import cn.nukkit.tags.ItemTags;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.Identifier;
 import cn.nukkit.utils.MinecraftNamespaceComparator;
@@ -61,6 +62,8 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
     private final Object2ObjectOpenHashMap<String, Recipe> allRecipeMaps = new Object2ObjectOpenHashMap<>();
     private final Object2DoubleOpenHashMap<Recipe> recipeXpMap = new Object2DoubleOpenHashMap<>();
     private final Int2ObjectMap<Recipe> networkIdRecipeMap = new Int2ObjectOpenHashMap<>();
+
+    public static int FURNACE_RECIPE_NET_ID_COUNTER = 111000;
 
     public VanillaRecipeParser getVanillaRecipeParser() {
         return vanillaRecipeParser;
@@ -772,32 +775,29 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                         }
                     }
                     case "furnace", "blast_furnace", "smoker", "campfire", "soul_campfire" -> {
-                        Map<String, Object> inputData = (Map<String, Object>) recipe.get("input");
-                        Map<String, Object> outputData = (Map<String, Object>) recipe.get("output");
-                        Item inputItem = parseDescription(inputData, ParseType.FURNACE_INPUT).toItem();
-                        Item outputItem = parseDescription(outputData, ParseType.FURNACE_OUTPUT).toItem();
+                        List<Map<String, Object>> outputs = (List<Map<String, Object>>) recipe.get("output");
+                        Map<String, Object> primaryResultData = outputs.removeFirst();
+                        ItemDescriptor primaryResult = parseDescription(primaryResultData, ParseType.FURNACE_OUTPUT);
+                        List<ItemDescriptor> ingredients = new ArrayList<>();
+                        List<Map<String, Object>> inputs = (List<Map<String, Object>>) recipe.get("input");
 
-                        SmeltingRecipe smeltingRecipe = switch (block) {
-                            case "blast_furnace" -> new BlastFurnaceRecipe(outputItem, inputItem);
-                            case "smoker" -> new SmokerRecipe(outputItem, inputItem);
-                            case "campfire" -> new CampfireRecipe(outputItem, inputItem);
-                            case "soul_campfire" -> new SoulCampfireRecipe(outputItem, inputItem);
-                            default -> new FurnaceRecipe(outputItem, inputItem);
-                        };
-
-                        double xp = furnaceXpConfig.getDouble(inputItem.getId() + ":" + inputItem.getDamage());
-                        if (xp != 0) {
-                            this.setRecipeXp(smeltingRecipe, xp);
+                        for (Map<String, Object> input : inputs) {
+                            ingredients.add(parseDescription(input, ParseType.FURNACE_INPUT));
                         }
 
-                        try {
-                            this.register(smeltingRecipe);
-                        } catch (Exception e) {     //this can be removed once duplicate recipes no longer exist
+                        if (primaryResult instanceof ItemTagDescriptor tagDescriptor) {
+                            final Set<String> ids = ItemTags.getItemSet(tagDescriptor.getItemTag());
+                            for (String id : ids) {
+                                final Item outputItem = Item.get(id, 0, tagDescriptor.getCount());
+                                this.registerFurnaceRecipe(block, outputItem, ingredients, furnaceXpConfig);
+                            }
+                        } else {
+                            final Item outputItem = primaryResult.toItem();
+                            this.registerFurnaceRecipe(block, outputItem, ingredients, furnaceXpConfig);
                         }
                     }
                 }
             }
-
         } catch (IOException e) {
             log.warn("Failed to load recipes config");
         }
@@ -826,6 +826,41 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         this.registerSpecial();
     }
 
+    private void registerFurnaceRecipe(String block, Item outputItem, List<ItemDescriptor> ingredients, Config furnaceXpConfig) {
+        final ItemDescriptor descriptor = ingredients.getFirst();
+        if (descriptor instanceof ItemTagDescriptor tagDescriptor) {
+            final Set<String> ids = ItemTags.getItemSet(tagDescriptor.getItemTag());
+            for (String id : ids) {
+                final Item inputItem = Item.get(id, 0, tagDescriptor.getCount());
+                this.registerFurnaceRecipe(block, outputItem, inputItem, furnaceXpConfig);
+            }
+        } else {
+            final Item inputItem = ingredients.getFirst().toItem();
+            this.registerFurnaceRecipe(block, outputItem, inputItem, furnaceXpConfig);
+        }
+    }
+
+    private void registerFurnaceRecipe(String block, Item outputItem, Item inputItem, Config furnaceXpConfig) {
+        final SmeltingRecipe smeltingRecipeInternal = switch (block) {
+            case "blast_furnace" -> new BlastFurnaceRecipe(outputItem, inputItem);
+            case "smoker" -> new SmokerRecipe(outputItem, inputItem);
+            case "campfire" -> new CampfireRecipe(outputItem, inputItem);
+            case "soul_campfire" -> new SoulCampfireRecipe(outputItem, inputItem);
+            default -> new FurnaceRecipe(outputItem, inputItem);
+        };
+        try {
+            this.register(smeltingRecipeInternal);
+
+            double xp = furnaceXpConfig.getDouble(inputItem.getId() + ":" + inputItem.getDamage());
+
+            if (xp != 0) {
+                this.setRecipeXp(smeltingRecipeInternal, xp);
+            }
+        } catch (Exception ignored) {
+
+        }
+    }
+
     private void registerSpecial() {
         this.register(new DecoratedPotRecipe(10000));
         this.register(new SmithingArmorTrimCorrectedRecipe(10001));
@@ -840,7 +875,8 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
         ItemDescriptor descriptor = null;
 
         switch (parseType) {
-            case SMITHING_TABLE, CRAFTING_TABLE_INPUT, CARTOGRAPHY_TABLE_INPUT, STONECUTTER_INPUT -> {
+            case SMITHING_TABLE, CRAFTING_TABLE_INPUT, CARTOGRAPHY_TABLE_INPUT, STONECUTTER_INPUT,
+                 FURNACE_INPUT -> {
                 if (data.get("type").equals("item_tag")) {
                     String itemTag = (String) data.get("itemTag");
                     int count = data.containsKey("count") ? Utils.toInt(data.get("count")) : 1;
@@ -867,7 +903,7 @@ public class RecipeRegistry implements IRegistry<String, Recipe, Recipe> {
                     descriptor = new DefaultDescriptor(item);
                 }
             }
-            case CRAFTING_TABLE_OUTPUT, CARTOGRAPHY_TABLE_OUTPUT, STONECUTTER_OUTPUT, FURNACE_INPUT, FURNACE_OUTPUT -> {
+            case CRAFTING_TABLE_OUTPUT, CARTOGRAPHY_TABLE_OUTPUT, STONECUTTER_OUTPUT, FURNACE_OUTPUT -> {
                 String id = (String) data.get("id");
                 int count = 1;
                 short meta = 0;

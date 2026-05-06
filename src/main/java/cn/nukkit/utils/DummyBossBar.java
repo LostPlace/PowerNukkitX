@@ -4,10 +4,10 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.Attribute;
 import org.cloudburstmc.math.vector.Vector2f;
 import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.protocol.bedrock.data.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorDataMap;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.actor.MoveActorAbsoluteData;
+import org.cloudburstmc.protocol.bedrock.data.payload.boss.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.packet.AddActorPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BossEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.MoveActorAbsolutePacket;
@@ -164,7 +164,7 @@ public class DummyBossBar {
         final BossEventPacket bossEventPacket = new BossEventPacket();
         bossEventPacket.setTargetActorID(this.bossBarId);
         bossEventPacket.setEventType(BossEventUpdateType.UPDATE_STYLE);
-        bossEventPacket.setColor(color != null ? color.ordinal() : 0);
+        bossEventPacket.setColor(color != null ? org.cloudburstmc.protocol.bedrock.data.payload.boss.BossBarColor.from(color.ordinal()) : org.cloudburstmc.protocol.bedrock.data.payload.boss.BossBarColor.PINK);
         this.player.sendPacket(bossEventPacket);
     }
 

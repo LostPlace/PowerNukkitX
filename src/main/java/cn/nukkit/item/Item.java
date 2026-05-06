@@ -2675,6 +2675,9 @@ public abstract class Item implements Cloneable, ItemID {
     }
 
     public static Item fromNetwork(ItemData itemData) {
+        if (itemData.getDefinition() == null) {
+            return Item.AIR;
+        }
         final ItemDefinition definition = itemData.getDefinition();
         final Item item = Item.get(definition.getIdentifier(), itemData.getDamage(), itemData.getCount());
         item.setNamedTag(itemData.getTag());

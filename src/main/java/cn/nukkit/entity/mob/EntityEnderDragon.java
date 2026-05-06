@@ -46,9 +46,10 @@ import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.plugin.InternalPlugin;
 import org.cloudburstmc.nbt.NbtMap;
-import org.cloudburstmc.protocol.bedrock.data.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.data.SoundEvent;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorEvent;
+import org.cloudburstmc.protocol.bedrock.data.payload.boss.BossBarColor;
+import org.cloudburstmc.protocol.bedrock.data.payload.boss.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.packet.ActorEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.AddActorPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
@@ -286,7 +287,7 @@ public class EntityEnderDragon extends EntityBoss implements EntityFlyable {
         bossEventPacket.setEventType(BossEventUpdateType.ADD);
         bossEventPacket.setName(this.getName());
         bossEventPacket.setHealthPercent(health / getHealthMax());
-        bossEventPacket.setColor(5);
+        bossEventPacket.setColor(BossBarColor.PURPLE);
         player.sendPacket(bossEventPacket);
     }
 

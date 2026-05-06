@@ -98,8 +98,9 @@ public class ClientChainData {
         if ((memoryTier = validateEnum("MemoryTier", map, MemoryTier::from)) == null) {
             return null;
         }
-        if (!map.containsKey("PartyId") || !(map.get("PartyId") instanceof String partyId)) {
-            return null;
+        String partyId = null;
+        if ((map.get("PartyId") instanceof String pId)) {
+            partyId = pId;
         }
         if (!map.containsKey("PlatformOfflineId") || !(map.get("PlatformOfflineId") instanceof String platformOfflineId)) {
             return null;

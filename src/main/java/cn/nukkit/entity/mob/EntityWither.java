@@ -44,11 +44,12 @@ import cn.nukkit.level.format.IChunk;
 import cn.nukkit.math.BlockFace;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtType;
-import org.cloudburstmc.protocol.bedrock.data.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.data.SoundEvent;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorEvent;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorFlags;
+import org.cloudburstmc.protocol.bedrock.data.payload.boss.BossBarColor;
+import org.cloudburstmc.protocol.bedrock.data.payload.boss.BossEventUpdateType;
 import org.cloudburstmc.protocol.bedrock.packet.ActorEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.AddActorPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
@@ -296,7 +297,7 @@ public class EntityWither extends EntityBoss implements EntityFlyable, EntitySmi
         bossEventPacket.setName(this.getName());
         bossEventPacket.setHealthPercent(0f);
         bossEventPacket.setDarkenScreen(1);
-        bossEventPacket.setColor(6);
+        bossEventPacket.setColor(BossBarColor.REBECCA_PURPLE);
         player.sendPacket(bossEventPacket);
     }
 

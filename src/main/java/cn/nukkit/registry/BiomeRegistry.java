@@ -61,8 +61,9 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
             for (var e : map.entrySet()) {
                 Object value = e.getValue();
                 if (value instanceof Number number) {
-                    NAME2ID.put(e.getKey(), number.intValue());
-                    ID2NAME.put(number.intValue(), e.getKey());
+                    final String key = e.getKey().replaceAll("minecraft:", "");
+                    NAME2ID.put(key, number.intValue());
+                    ID2NAME.put(number.intValue(), key);
                 }
             }
         } catch (IOException e) {
@@ -277,7 +278,7 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
 
     private BiomeDefinitionChunkGenData readBiomeDefinitionChunkGenData(NbtMap nbtMap) {
         final BiomeClimateData climate = nbtMap.containsKey("climate") ?
-                this.readBiomeClimateData(nbtMap.getCompound("climate")) : null; // DONE
+                this.readBiomeClimateData(nbtMap.getCompound("climate")) : null;
         final List<BiomeConsolidatedFeatureData> consolidatedFeatures = nbtMap.containsKey("consolidatedFeatures") ?
                 nbtMap.getCompound("consolidatedFeatures").getList("features", NbtType.COMPOUND)
                         .stream()
@@ -287,17 +288,20 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
                 this.readBiomeMountainParamsData(nbtMap.getCompound("mountainParams")) : null;
         final BiomeSurfaceMaterialAdjustmentData surfaceMaterialAdjustment = nbtMap.containsKey("surfaceMaterialAdjustments") ?
                 this.readBiomeSurfaceMaterialAdjustmentData(nbtMap.getCompound("surfaceMaterialAdjustments")) : null;
-        final BiomeSurfaceBuilderData surfaceBuilderData = this.readBiomeSurfaceBuilderData(nbtMap); // DONE
+        final BiomeSurfaceBuilderData surfaceBuilderData = nbtMap.containsKey("surfaceBuilderData") ?
+                this.readBiomeSurfaceBuilderData(nbtMap.getCompound("surfaceBuilderData")) : null;
         final BiomeOverworldGenRulesData overworldGenRules = nbtMap.containsKey("overworldGenRules") ?
-                this.readBiomeOverworldGenRulesData(nbtMap.getCompound("overworldGenRules")) : null; // DONE
+                this.readBiomeOverworldGenRulesData(nbtMap.getCompound("overworldGenRules")) : null;
         final BiomeMultinoiseGenRulesData multinoiseGenRules = nbtMap.containsKey("multinoiseGenRules") ?
-                this.readBiomeMultinoiseGenRulesData(nbtMap.getCompound("multinoiseGenRules")) : null; // DONE
+                this.readBiomeMultinoiseGenRulesData(nbtMap.getCompound("multinoiseGenRules")) : null;
         final BiomeLegacyWorldGenRulesData legacyWorldGenRules = nbtMap.containsKey("legacyWorldGenRules") ?
                 this.readBiomeLegacyWorldGenRulesData(nbtMap.getCompound("legacyWorldGenRules")) : null;
-        final BiomeReplacementData replacementBiomes = nbtMap.containsKey("replacementBiomes") ?
-                this.readBiomeReplacementData(nbtMap.getCompound("replacementBiomes")) : null;
+        final List<BiomeReplacementData> replacementBiomes = nbtMap.containsKey("replacementBiomes") ?
+                this.readBiomeReplacementDataList(nbtMap.getList("replacementBiomes", NbtType.COMPOUND)) : null;
         final VillageType villageType = nbtMap.containsKey("villageType") ?
                 VillageType.from(nbtMap.getInt("villageType")) : null;
+        final BiomeSurfaceBuilderData subSurfaceBuilderData = nbtMap.containsKey("subSurfaceBuilderData") ?
+                this.readBiomeSurfaceBuilderData(nbtMap.getCompound("subSurfaceBuilderData")) : null;
         return new BiomeDefinitionChunkGenData(
                 climate,
                 consolidatedFeatures,
@@ -307,10 +311,10 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
                 overworldGenRules,
                 multinoiseGenRules,
                 legacyWorldGenRules,
-                replacementBiomes,
                 null,
+                replacementBiomes,
                 villageType,
-                null
+                subSurfaceBuilderData
         );
     }
 
@@ -468,6 +472,8 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
                 this.readBiomeMesaSurfaceData(nbtMap.getCompound("mesaSurface")) : null;
         final BiomeCappedSurfaceData cappedSurface = nbtMap.containsKey("cappedSurface") ?
                 this.readBiomeCappedSurfaceData(nbtMap.getCompound("cappedSurface")) : null;
+        final BiomeNoiseGradientSurfaceData noiseGradientSurface = nbtMap.containsKey("noiseGradientSurface") ?
+                this.readBiomeNoiseGradientSurfaceData(nbtMap.getCompound("noiseGradientSurface")) : null;
         return new BiomeSurfaceBuilderData(
                 surfaceMaterial,
                 hasDefaultOverworldSurface,
@@ -476,7 +482,7 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
                 hasTheEndSurface,
                 mesaSurface,
                 cappedSurface,
-                null
+                noiseGradientSurface
         );
     }
 
@@ -609,20 +615,56 @@ public class BiomeRegistry implements IRegistry<Integer, Pair<Short, BiomeDefini
         );
     }
 
-    private BiomeReplacementData readBiomeReplacementData(NbtMap nbtMap) {
-        final short replacementBiome = nbtMap.getShort("replacementBiome");
-        final short dimension = nbtMap.getShort("dimension");
-        final List<Short> targetBiomes = nbtMap.getList("targetBiomes", NbtType.SHORT);
-        final float amount = nbtMap.getFloat("amount");
-        final float noiseFrequencyScale = nbtMap.getFloat("noiseFrequencyScale");
-        final int replacementIndex = nbtMap.getInt("replacementIndex");
-        return new BiomeReplacementData(
-                replacementBiome,
-                dimension,
-                targetBiomes,
-                amount,
-                noiseFrequencyScale,
-                replacementIndex
+    private List<BiomeReplacementData> readBiomeReplacementDataList(List<NbtMap> replacementDataList) {
+        final List<BiomeReplacementData> biomeReplacements = new ObjectArrayList<>();
+        for (NbtMap nbtMap : replacementDataList) {
+            final short replacementBiome = nbtMap.getShort("replacementBiome");
+            final short dimension = nbtMap.getShort("dimension");
+            final List<Short> targetBiomes = nbtMap.getList("targetBiomes", NbtType.SHORT);
+            final float amount = nbtMap.getFloat("amount");
+            final float noiseFrequencyScale = nbtMap.getFloat("noiseFrequencyScale");
+            final int replacementIndex = nbtMap.getInt("replacementIndex");
+            biomeReplacements.add(
+                    new BiomeReplacementData(
+                            replacementBiome,
+                            dimension,
+                            targetBiomes,
+                            amount,
+                            noiseFrequencyScale,
+                            replacementIndex
+                    )
+            );
+        }
+        return biomeReplacements;
+    }
+
+    private BiomeNoiseGradientSurfaceData readBiomeNoiseGradientSurfaceData(NbtMap nbtMap) {
+        final List<BlockDefinition> nonReplaceableBlocks = nbtMap.getList("nonReplaceableBlocks", NbtType.INT)
+                .stream().map(integer -> (BlockDefinition) new RuntimeBlockDefinition(integer))
+                .toList();
+        final List<SerializedNoiseBlockSpecifier> gradientBlocks = nbtMap.getList("gradientBlocks", NbtType.INT)
+                .stream().map(integer ->
+                        new SerializedNoiseBlockSpecifier(
+                                null,
+                                0f,
+                                null,
+                                new RuntimeBlockDefinition(integer)
+                        )
+                )
+                .toList();
+        final NoiseDescriptor noiseDescriptor = this.readNoiseDescriptor(nbtMap);
+        return new BiomeNoiseGradientSurfaceData(
+                nonReplaceableBlocks,
+                gradientBlocks,
+                noiseDescriptor
+        );
+    }
+
+    private NoiseDescriptor readNoiseDescriptor(NbtMap nbtMap) {
+        return new NoiseDescriptor(
+                nbtMap.getString("name"),
+                nbtMap.getInt("firstOctave"),
+                nbtMap.getList("amplitudes", NbtType.FLOAT)
         );
     }
 }

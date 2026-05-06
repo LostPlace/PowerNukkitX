@@ -96,7 +96,9 @@ import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.cloudburstmc.protocol.bedrock.data.MoveActorDeltaData;
 import org.cloudburstmc.protocol.bedrock.data.SoundEvent;
 import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionData;
-import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.ItemUseTransaction;
+import org.cloudburstmc.protocol.bedrock.data.payload.inventory.transaction.ItemUsePredictedResult;
+import org.cloudburstmc.protocol.bedrock.data.payload.inventory.transaction.ItemUseTriggerType;
+import org.cloudburstmc.protocol.bedrock.data.payload.inventory.transaction.data.ItemUseInventoryTransaction;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -2353,7 +2355,7 @@ public class Level implements Metadatable {
             pendingBlockLight.putAll(this.blockLightQueue);
             this.blockLightQueue.clear();
         }
-        
+
         try {
             Queue<Long> lightPropagationQueue = new ConcurrentLinkedQueue<>();
             Queue<Object[]> lightRemovalQueue = new ConcurrentLinkedQueue<>();
@@ -2943,15 +2945,15 @@ public class Level implements Metadatable {
         return entities;
     }
 
-    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseTransaction data) {
+    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseInventoryTransaction data) {
         return this.useItemOn(vector, item, face, data, null);
     }
 
-    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseTransaction data, Player player) {
+    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseInventoryTransaction data, Player player) {
         return this.useItemOn(vector, item, face, data, player, true);
     }
 
-    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseTransaction data, Player player, boolean playSound) {
+    public Item useItemOn(Vector3 vector, Item item, BlockFace face, ItemUseInventoryTransaction data, Player player, boolean playSound) {
         Block target = this.getBlock(vector);
         Block block = target.canBeReplaced() ? target : (target.getSnowloggingLevel() > 0 && item.getBlock() instanceof BlockSnowLayer ? target : target.getSide(face));
 
@@ -2977,7 +2979,7 @@ public class Level implements Metadatable {
             return null;
         }
 
-        boolean isInteractionTrigger = data.getTriggerType() == ItemUseTransaction.TriggerType.PLAYER_INPUT || data.getTriggerType() == ItemUseTransaction.TriggerType.SIMULATION_TICK;
+        boolean isInteractionTrigger = data.getTriggerType() == ItemUseTriggerType.PLAYER_INPUT || data.getTriggerType() == ItemUseTriggerType.SIMULATION_TICK;
 
         if (player == null) {
             if (!target.isAir() && target.canBeActivated() && target.onActivate(item, null, face, fx, fy, fz)) {
@@ -3022,7 +3024,7 @@ public class Level implements Metadatable {
             }
         }
 
-        if (data.getClientInteractPrediction() == ItemUseTransaction.PredictedResult.SUCCESS) {
+        if (data.getClientInteractPrediction() == ItemUsePredictedResult.SUCCESS) {
             return placeBlock(item, face, fx, fy, fz, player, playSound, block, target);
         }
         return item;
@@ -4555,7 +4557,7 @@ public class Level implements Metadatable {
      * Run server memory garbage collection asynchronously
      */
     public void doLevelGarbageCollection(boolean force) {
-        if(inGarbageCollectionProcess) return;
+        if (inGarbageCollectionProcess) return;
         inGarbageCollectionProcess = true;
         //gcBlockInventoryMetaData
         for (var entry : new HashMap<>(this.getBlockMetadata().getBlockMetadataMap()).entrySet()) {
@@ -4587,7 +4589,7 @@ public class Level implements Metadatable {
         }
 
         for (Entity entity : this.entities.values()) {
-            if(!isChunkLoaded(entity.getChunkX(), entity.getChunkZ())) {
+            if (!isChunkLoaded(entity.getChunkX(), entity.getChunkZ())) {
                 removeEntity(entity);
             }
         }
@@ -4607,11 +4609,12 @@ public class Level implements Metadatable {
         if (next - 5 > current || force) {
             long allocated = (next - current) - 1;
             boolean forceUnload = force;
-            if(!forceUnload) {
+            if (!forceUnload) {
                 double maxChunkLength = 0;
-                for(Player player : getPlayers().values()) maxChunkLength += Math.PI * Math.pow(player.getViewDistance(), 2);
+                for (Player player : getPlayers().values())
+                    maxChunkLength += Math.PI * Math.pow(player.getViewDistance(), 2);
                 float margin = getServer().getSettings().performanceSettings().forceGCpercentage();
-                if(this.unloadQueue.size() > maxChunkLength * margin) forceUnload = true;
+                if (this.unloadQueue.size() > maxChunkLength * margin) forceUnload = true;
             }
             this.unloadChunks(allocated, forceUnload);
         }
@@ -4658,7 +4661,7 @@ public class Level implements Metadatable {
             }
 
             int size = toRemove.size();
-            if(size > 0) {
+            if (size > 0) {
                 requireProvider().saveChunks(toRemove.stream().map(index -> getChunkIfLoaded(getHashX(index), getHashZ(index))).collect(Collectors.toUnmodifiableSet()));
 
                 for (int i = 0; i < size; i++) {

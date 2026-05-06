@@ -65,7 +65,7 @@ public class LoginHandler implements PacketHandler<LoginPacket> {
 
         final boolean xboxAuthRequired = server.getSettings().baseSettings().xboxAuth();
         if (xboxAuthRequired && (type.equals(PlayerAuthenticationType.SELF_SIGNED)) ||
-                packet.getToken() == null || packet.getToken().isEmpty() || packet.getChain().size() != 1) {
+                packet.getToken() == null || packet.getToken().isEmpty()) {
             holder.disconnect(notAuthenticated);
             return;
         }
@@ -147,10 +147,12 @@ public class LoginHandler implements PacketHandler<LoginPacket> {
             final JwtClaims claims = ctx.getJwtClaims();
             final ClientChainData clientChainData = ClientChainData.from(claims);
             if (clientChainData == null) {
+                System.out.println("chain is invalid");
                 return ClientJwtValidationResult.INVALID;
             }
             final SerializedSkin skin = ClientSkinData.readSkin(claims);
             if (skin == null) {
+                System.out.println("skin is invalid");
                 return ClientJwtValidationResult.INVALID;
             }
             return new ClientJwtValidationResult(

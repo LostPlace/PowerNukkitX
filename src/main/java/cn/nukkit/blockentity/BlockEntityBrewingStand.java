@@ -391,7 +391,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Rec
         }
 
         if (this.hasName()) {
-            nbt.put("CustomName", namedTag.get("CustomName"));
+            nbt.putString("CustomName", namedTag.getString("CustomName"));
         }
 
         return nbt.build();

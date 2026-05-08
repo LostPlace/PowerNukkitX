@@ -37,7 +37,7 @@ import cn.nukkit.utils.ItemHelper;
 import cn.nukkit.utils.Utils;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.cloudburstmc.nbt.NbtMap;
-import org.cloudburstmc.protocol.bedrock.data.biome.BiomeDefinitionData;
+import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -286,22 +286,22 @@ public class EntitySpider extends EntityMob implements EntityWalkable, EntityArt
     }
 
     private @Nullable Entity createRiderEntity(String entityId) {
-        NbtMap nbt = Entity.getDefaultNBT(this.getLocation());
+        NbtMapBuilder builder = Entity.getDefaultNBT(this.getLocation()).toBuilder();
 
         switch (this.jockeyType) {
             case SKELETON_JOCKEY, STRAY_JOCKEY, BOGGED_JOCKEY, PARCHED_JOCKEY -> {
                 Item bow = Item.get(Item.BOW, 0, 1);
-                nbt.put("Mainhand", ItemHelper.write(bow));
+                builder.putCompound("Mainhand", ItemHelper.write(bow));
             }
             case WITHER_SKELETON_JOCKEY -> {
                 Item sword = Item.get(Item.STONE_SWORD, 0, 1);
-                nbt.put("Mainhand", ItemHelper.write(sword));
+                builder.putCompound("Mainhand", ItemHelper.write(sword));
             }
             default -> {
             }
         }
 
-        Entity rider = Entity.createEntity(entityId, this.getChunk(), nbt);
+        Entity rider = Entity.createEntity(entityId, this.getChunk(), builder.build());
         if (rider == null) return null;
         return rider;
     }

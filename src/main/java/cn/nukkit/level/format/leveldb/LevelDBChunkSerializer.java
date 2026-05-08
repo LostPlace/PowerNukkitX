@@ -75,7 +75,7 @@ public class LevelDBChunkSerializer {
             serializeHeightAndBiome(writeBatch, unsafeChunk);
             serializeLight(writeBatch, unsafeChunk);
             serializeBlockTicks(unsafeChunk);
-            writeBatch.put(LevelDBKeyUtil.PNX_EXTRA_DATA.getKey(unsafeChunk.getX(), unsafeChunk.getZ(), unsafeChunk.getDimensionData()), this.write(unsafeChunk.getExtraData()));
+            writeBatch.put(LevelDBKeyUtil.PNX_EXTRA_DATA.getKey(unsafeChunk.getX(), unsafeChunk.getZ(), unsafeChunk.getDimensionData()), this.writeBigEndian(unsafeChunk.getExtraData()));
         });
 
     }
@@ -99,7 +99,7 @@ public class LevelDBChunkSerializer {
         byte[] extraData = db.get(LevelDBKeyUtil.PNX_EXTRA_DATA.getKey(builder.getChunkX(), builder.getChunkZ(), builder.getDimensionData()));
         NbtMap pnxExtraData = null;
         if (extraData != null) {
-            builder.extraData(pnxExtraData = this.read(extraData));
+            builder.extraData(pnxExtraData = this.readBigEndian(extraData));
         }
         deserializeBlock(db, builder, pnxExtraData);
         deserializeHeightAndBiome(db, builder, pnxExtraData);
@@ -510,20 +510,34 @@ public class LevelDBChunkSerializer {
 
     private NbtMap read(byte[] data) {
         try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-             final NBTInputStream nbtInputStream = NbtUtils.createNetworkReader(inputStream)) {
+             final NBTInputStream nbtInputStream = NbtUtils.createReaderLE(inputStream)) {
             return (NbtMap) nbtInputStream.readTag();
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to read network nbt");
+            throw new IllegalStateException("Failed to read nbt", e);
         }
     }
 
-    public byte[] write(NbtMap nbtMap) {
+    private NbtMap readBigEndian(byte[] data) {
+        try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+             final NBTInputStream nbtInputStream = NbtUtils.createReader(inputStream)) {
+            final int id = inputStream.read();
+            final NbtType<?> type = NbtType.byId(id);
+            if (type == null || !type.equals(NbtType.COMPOUND)) {
+                return null;
+            }
+            return (NbtMap) nbtInputStream.readValue(type);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read big endian nbt", e);
+        }
+    }
+
+    public byte[] writeBigEndian(NbtMap nbtMap) {
         try (final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             final NBTOutputStream nbtOutputStream = NbtUtils.createNetworkWriter(outputStream)) {
+             final NBTOutputStream nbtOutputStream = NbtUtils.createWriter(outputStream)) {
             nbtOutputStream.writeTag(nbtMap);
             return outputStream.toByteArray();
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to write network nbt");
+            throw new IllegalStateException("Failed to write big endian nbt", e);
         }
     }
 }

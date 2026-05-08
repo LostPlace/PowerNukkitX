@@ -741,7 +741,7 @@ public abstract class EntityMinecartAbstract extends EntityVehicle {
     }
 
     private void saveEntityData() {
-        boolean hasDisplay = super.getDataProperty(ActorDataTypes.CUSTOM_DISPLAY) == 1
+        boolean hasDisplay = super.getDataProperty(ActorDataTypes.CUSTOM_DISPLAY, (byte) 0) == (byte) 1
                 || blockInside != null;
         int display;
         int offSet;

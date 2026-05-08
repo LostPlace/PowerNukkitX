@@ -24,6 +24,7 @@ import cn.nukkit.math.Vector3;
 import cn.nukkit.utils.ChunkException;
 import cn.nukkit.utils.SemVersion;
 import cn.nukkit.utils.collection.nb.Long2ObjectNonBlockingMap;
+import com.google.errorprone.annotations.Var;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufOutputStream;
@@ -36,6 +37,7 @@ import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.nbt.NbtUtils;
 import org.cloudburstmc.protocol.bedrock.data.GameType;
+import org.cloudburstmc.protocol.common.util.VarInts;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.WriteBatch;
@@ -354,7 +356,7 @@ public class LevelDBProvider implements LevelProvider {
                 try (ByteBufOutputStream stream = new ByteBufOutputStream(byteBuf); final NBTOutputStream outputStream = NbtUtils.createNetworkWriter(stream)) {
                     if (tagList.isEmpty()) {
                         stream.writeByte(0);
-                        stream.writeUTF("");
+                        VarInts.writeUnsignedInt(byteBuf, 0);
                     } else {
                         for (NbtMap nbtMap : tagList) {
                             outputStream.writeTag(nbtMap);

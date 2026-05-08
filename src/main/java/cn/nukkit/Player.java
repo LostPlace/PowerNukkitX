@@ -4759,8 +4759,9 @@ public class Player extends EntityHuman implements CommandSender, ChunkLoader, I
      */
     @UnintendedClientBehaviour
     public void forceClientCloseInventory() {
-        setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) | (byte) 0x2);
-        getLevel().getScheduler().scheduleDelayedTask(() -> setDataProperty(ActorDataTypes.PLAYER_FLAGS, getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) & (byte) 0x1), 2);
+        final byte value = getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0);
+        setDataProperty(ActorDataTypes.PLAYER_FLAGS, ((Integer) (value | (byte) 0x2)).byteValue());
+        getLevel().getScheduler().scheduleDelayedTask(() -> setDataProperty(ActorDataTypes.PLAYER_FLAGS, ((Integer) (getDataProperty(ActorDataTypes.PLAYER_FLAGS, (byte) 0) & (byte) 0x1)).byteValue()), 2);
     }
 
     /**

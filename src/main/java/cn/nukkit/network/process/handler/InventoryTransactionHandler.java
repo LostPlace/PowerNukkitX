@@ -100,7 +100,7 @@ public class InventoryTransactionHandler implements PacketHandler<InventoryTrans
         } else if (packet.getTransaction().getType().equals(InventoryTransactionDataType.NORMAL)) {
             if (packet.getTransaction().getActions().getActions().size() == 2 &&
                     packet.getTransaction().getActions().getActions().getFirst().getSource().getSourceType().equals(InventorySourceType.WORLD_INTERACTION) &&
-                    packet.getTransaction().getActions().getActions().getFirst().getSource().getBitFlags().equals(InventorySourceFlags.WORLD_INTERACTION_RANDOM) &&
+                    packet.getTransaction().getActions().getActions().getFirst().getSource().getBitFlags().equals(InventorySourceFlags.NO_FLAG) &&
                     packet.getTransaction().getActions().getActions().get(1).getSource().getSourceType().equals(InventorySourceType.CONTAINER_INVENTORY) &&
                     packet.getTransaction().getActions().getActions().get(1).getSource().getBitFlags().equals(InventorySourceFlags.NO_FLAG)) { //handle throw hotbar item for player
                 final int slot = packet.getTransaction().getActions().getActions().get(1).getSlot();

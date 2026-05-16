@@ -7,12 +7,17 @@ import cn.nukkit.event.player.EntityFreezeEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemShield;
 import cn.nukkit.level.format.IChunk;
+import lombok.extern.slf4j.Slf4j;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.protocol.bedrock.data.AbilitiesIndex;
 import org.cloudburstmc.protocol.bedrock.data.ActorLinkType;
 import org.cloudburstmc.protocol.bedrock.data.BuildPlatform;
 import org.cloudburstmc.protocol.bedrock.data.GameType;
+import org.cloudburstmc.protocol.bedrock.data.PlayerPermissionLevel;
+import org.cloudburstmc.protocol.bedrock.data.SerializedAbilitiesData;
 import org.cloudburstmc.protocol.bedrock.data.actor.ActorLink;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandPermissionLevel;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
 import org.cloudburstmc.protocol.bedrock.packet.AddPlayerPacket;
 import org.cloudburstmc.protocol.bedrock.packet.RemoveActorPacket;
@@ -20,11 +25,14 @@ import org.cloudburstmc.protocol.bedrock.packet.SetActorLinkPacket;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * @author MagicDroidX (Nukkit Project)
  */
+@Slf4j
 public class EntityHuman extends EntityHumanType {
     protected UUID uuid;
     protected byte[] rawUUID;
@@ -188,8 +196,13 @@ public class EntityHuman extends EntityHumanType {
             addPlayerPacket.setRotation(this.getRotationVector());
             addPlayerPacket.setCarriedItem(this.getInventory().getItemInMainHand().toNetwork());
             addPlayerPacket.setDeviceId("");
+            addPlayerPacket.setPlatformChatId("");
             addPlayerPacket.setBuildPlatform(BuildPlatform.UNKNOWN);
             addPlayerPacket.setPlayerGameType(GameType.SURVIVAL);
+            addPlayerPacket.setAbilitiesData(
+                    this instanceof Player asPlayer ? asPlayer.getAdventureSettings().buildSerializedAbilitiesData() :
+                            this.buildSerializedAbilitiesData()
+            );
             player.sendPacket(addPlayerPacket);
 
             this.inventory.sendArmorContents(player);
@@ -214,6 +227,20 @@ public class EntityHuman extends EntityHumanType {
                 this.server.removePlayerListData(this.getUniqueId(), player);
             }
         }
+    }
+
+    public SerializedAbilitiesData buildSerializedAbilitiesData() {
+        final SerializedAbilitiesData data = new SerializedAbilitiesData();
+        data.setTargetPlayerRawId(this.getId());
+        data.setCommandPermissions(CommandPermissionLevel.ANY);
+        data.setPlayerPermissions(PlayerPermissionLevel.MEMBER);
+        final SerializedAbilitiesData.SerializedLayer layer = new SerializedAbilitiesData.SerializedLayer();
+        layer.setSerializedLayer(SerializedAbilitiesData.SerializedLayer.SerializedAbilitiesLayer.BASE);
+        layer.getAbilitiesSet().addAll(List.of(AbilitiesIndex.values()));
+        layer.setFlySpeed(Player.DEFAULT_FLY_SPEED);
+        layer.setVerticalFlySpeed(1f);
+        layer.setWalkSpeed(Player.DEFAULT_SPEED);
+        return data;
     }
 
     @Override

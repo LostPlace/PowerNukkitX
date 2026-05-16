@@ -183,6 +183,12 @@ public class AdventureSettings implements Cloneable {
 
     public void sendAbilities(Collection<Player> players) {
         final UpdateAbilitiesPacket packet = new UpdateAbilitiesPacket();
+        packet.setData(this.buildSerializedAbilitiesData());
+
+        Server.broadcastPacket(players, packet);
+    }
+
+    public SerializedAbilitiesData buildSerializedAbilitiesData() {
         final SerializedAbilitiesData data = new SerializedAbilitiesData();
         data.setTargetPlayerRawId(this.player.getId());
         data.setPlayerPermissions(this.playerPermission);
@@ -208,10 +214,7 @@ public class AdventureSettings implements Cloneable {
         layer.setVerticalFlySpeed(this.player.getVerticalFlySpeed());
 
         data.getLayers().add(layer);
-
-        packet.setData(data);
-
-        Server.broadcastPacket(players, packet);
+        return data;
     }
 
     /**

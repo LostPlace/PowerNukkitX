@@ -1853,7 +1853,7 @@ public abstract class Entity extends Location implements Metadatable, EntityID {
         moveData.setActorRuntimeID(this.getId());
         moveData.setOnGround(this.onGround);
         moveData.setTeleported(tp);
-        moveData.setPos(this.getPosition().toNetwork());
+        moveData.setPos(this.getPosition().toNetwork().add(0f, this.getBaseOffset(), 0f));
         moveData.setRotation(org.cloudburstmc.math.vector.Vector3f.from(this.pitch, this.yaw, this.yaw));
 
         final MoveActorAbsolutePacket packet = new MoveActorAbsolutePacket();
